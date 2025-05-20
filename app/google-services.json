@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "474745190198",
+    "project_id": "kizunat-f6d30",
+    "storage_bucket": "kizunat-f6d30.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:474745190198:android:c47be4e37c356f680ee597",
+        "android_client_info": {
+          "package_name": "com.example.kizunat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBeNiU-9Qflkm9ebL-8PRav0Uhsr77AJRo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
