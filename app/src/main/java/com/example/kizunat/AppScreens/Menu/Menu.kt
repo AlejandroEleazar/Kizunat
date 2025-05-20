@@ -115,7 +115,7 @@ fun MenuContent(padding: PaddingValues) {
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Button(
-                        onClick = { /* TODO: save to DB */ },
+                        onClick = { /**/ },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF476730)),
                         modifier = Modifier
                             .height(48.dp)
