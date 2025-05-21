@@ -11,7 +11,9 @@ data class LoginSignup (
 )
 
 @Serializable
-object Form
+data class Form (
+    val name : String
+)
 
 @Serializable
 object Home

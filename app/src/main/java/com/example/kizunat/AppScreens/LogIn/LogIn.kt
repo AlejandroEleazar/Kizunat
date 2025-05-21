@@ -53,7 +53,7 @@ import com.google.firebase.auth.FirebaseAuth
 fun AuthScreen(
     auth: FirebaseAuth,
     navigateToHome: () -> Unit,
-    navigateToForm: () -> Unit,
+    navigateToForm: (String) -> Unit,
     log: Boolean
 ) {
     var check by remember { mutableStateOf(log) }
@@ -147,7 +147,7 @@ fun AuthScreen(
                             }else{
                                 auth.createUserWithEmailAndPassword(mail, password).addOnCompleteListener{ task ->
                                     if (task.isSuccessful){
-                                        navigateToForm()
+                                        navigateToForm(name)
                                     }
                                     else{
                                         Log.d("Error", "ERROR")
@@ -330,4 +330,3 @@ private fun PasswordInputRow(
         )
     }
 }
-

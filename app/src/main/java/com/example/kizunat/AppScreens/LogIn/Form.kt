@@ -23,12 +23,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.kizunat.R
+import com.example.kizunat.User.User
+import com.google.firebase.firestore.FirebaseFirestore
+import java.text.SimpleDateFormat
 import java.util.*
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FormScreen(onNextClick: () -> Unit = {}, navigateToHome: () -> Unit) {
+fun FormScreen(navigateToHome: () -> Unit, db: FirebaseFirestore, name: String) {
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
 
@@ -218,7 +221,10 @@ fun FormScreen(onNextClick: () -> Unit = {}, navigateToHome: () -> Unit) {
                 Spacer(Modifier.height(40.dp))
 
                 Button(
-                    onClick = { navigateToHome()},
+                    onClick = {
+                        saveUser(db, name, dateOfBirth, height, weight, selectedGender, selectedAllergies, selectedActivity)
+                        navigateToHome()
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
@@ -427,4 +433,34 @@ private fun MultiSelectDialog(
             }
         }
     }
+}
+
+
+fun saveUser(
+    db: FirebaseFirestore,
+    name: String,
+    dateOfBirth: String,
+    height: String,
+    weight: String,
+    selectedGender: String,
+    selectedAllergies: Set<String>,
+    selectedActivity: String
+) {
+
+    db.collection("users")
+        .add(User(
+            name = name,
+            date_of_birth = parseDate(dateOfBirth, "dd-MM-yyyy"),
+            gender = selectedGender,
+            height = height.toInt(),
+            weight = weight.toInt(),
+            allerges =  selectedAllergies,
+            activity_level = selectedActivity
+        ))
+
+}
+
+fun parseDate(dateString: String, format: String): Date {
+    val dateFormat = SimpleDateFormat(format, Locale.getDefault())
+    return dateFormat.parse(dateString)
 }
