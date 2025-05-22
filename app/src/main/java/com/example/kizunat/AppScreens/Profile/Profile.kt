@@ -30,6 +30,11 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,30 +46,42 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kizunat.AppScreens.CustomScaffold
 import com.example.kizunat.R
+import com.example.kizunat.User.User
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
 @Composable
 fun ProfileScreen(
-    /* name: String,
-     height: String,
-     weight: String,
-     mail: String,
-     onEditClick: () -> Unit,*/
+    db: FirebaseFirestore,
     navigateToHome: () -> Unit,
     navigateToProfile: () -> Unit,
     navigateToMenu: () -> Unit,
-    navigateToEditProfile: () -> Unit
+    navigateToEditProfile: () -> Unit,
+
 ){
     CustomScaffold(
         navigateToHome,
         navigateToMenu,
         navigateToProfile
     ) { padding ->
-        ProfileContent(padding,navigateToEditProfile)
+        ProfileContent(padding,navigateToEditProfile,db)
     }
 }
 
 @Composable
-fun ProfileContent(padding: PaddingValues, navigateToEditProfile: () -> Unit) {
+fun ProfileContent(padding: PaddingValues, navigateToEditProfile: () -> Unit, db: FirebaseFirestore) {
+
+    var userInfo by remember { mutableStateOf<User?>(null) }
+
+    LaunchedEffect(Unit) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid != null) {
+            userInfo = getUserInfo(db, uid)
+        }
+    }
+
+
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
             painter = painterResource(id = R.drawable.bg_3),
@@ -105,13 +122,13 @@ fun ProfileContent(padding: PaddingValues, navigateToEditProfile: () -> Unit) {
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
                         Spacer(Modifier.height(10.dp))
-                        InfoRow(Icons.Default.Person, /*name*/ "hola")
+                        InfoRow(Icons.Default.Person, /*name*/ userInfo?.name.toString())
                         Divider(color = Color(0xFF476730), thickness = 1.dp)
-                        InfoRow(Icons.Default.Straighten, /*height*/ "180")
+                        InfoRow(Icons.Default.Straighten, /*height*/ userInfo?.height.toString())
                         Divider(color = Color(0xFF476730), thickness = 1.dp)
-                        InfoRow(Icons.Default.FitnessCenter, /*weight*/ "79")
+                        InfoRow(Icons.Default.FitnessCenter, /*weight*/ userInfo?.weight.toString())
                         Divider(color = Color(0xFF476730), thickness = 1.dp)
-                        InfoRow(Icons.Default.Email, /*mail*/ "ejemplo@gmail.com")
+                        InfoRow(Icons.Default.Email, /*mail*/ userInfo?.mail.toString())
                         Divider(color = Color(0xFF476730), thickness = 1.dp)
                     }
                 }
@@ -189,5 +206,11 @@ fun InfoRow(icon: ImageVector, value: String) {
             color = Color(0xFF2C3E22)  // Color de texto más oscuro
         )
     }
+}
+
+
+suspend fun getUserInfo(db: FirebaseFirestore, uid: String): User? {
+    val snapshot = db.collection("users").document(uid).get().await()
+    return snapshot.toObject(User::class.java)
 }
 

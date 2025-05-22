@@ -1,7 +1,6 @@
 package com.example.kizunat.User
 
 import com.google.firebase.Timestamp
-import java.util.Date
 
 data class User(
     val name: String,
@@ -9,6 +8,7 @@ data class User(
     val gender: String,
     val height: Int,
     val weight: Int,
-    val allerges: List<String>,
-    val activity_level: String
+    val allergies: List<String>,
+    val activity_level: String,
+    val mail : String?
 )

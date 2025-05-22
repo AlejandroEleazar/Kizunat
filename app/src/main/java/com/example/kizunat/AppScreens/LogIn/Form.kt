@@ -26,6 +26,7 @@ import androidx.compose.ui.window.Dialog
 import com.example.kizunat.R
 import com.example.kizunat.User.User
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.*
@@ -33,7 +34,11 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FormScreen(navigateToHome: () -> Unit, db: FirebaseFirestore, /*name: String*/) {
+fun FormScreen(
+    navigateToHome: () -> Unit,
+    db: FirebaseFirestore, /*name: String*/
+    auth: FirebaseAuth,
+) {
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
 
@@ -226,7 +231,7 @@ fun FormScreen(navigateToHome: () -> Unit, db: FirebaseFirestore, /*name: String
 
                 Button(
                     onClick = {
-                        saveUser(db, "hola", dateOfBirth, height, weight, selectedGender, selectedAllergies, selectedActivity)
+                        saveUser(db, "hola", dateOfBirth, height, weight, selectedGender, selectedAllergies, selectedActivity, auth)
                         navigateToHome()
                     },
                     modifier = Modifier
@@ -450,33 +455,33 @@ fun saveUser(
     weight: String,
     selectedGender: String,
     selectedAllergies: List<String>,
-    selectedActivity: String
+    selectedActivity: String,
+    auth: FirebaseAuth
 ) {
 
-    db.collection("users")
-        .add(User(
+    val user = FirebaseAuth.getInstance().currentUser
+    val uid = user?.uid
+
+    uid?.let {
+        val userData = User(
             name = name,
-            date_of_birth = Timestamp(parseDateToTimestamp(dateOfBirth)),
+            date_of_birth = parseDateToTimestamp(dateOfBirth),
             gender = selectedGender,
             height = height.toInt(),
             weight = weight.toInt(),
-            allerges =  selectedAllergies,
-            activity_level = selectedActivity
-        ))
-        .addOnSuccessListener {
-            Log.i("Kizunat", "Success")
-        }
-        .addOnFailureListener {
-            Log.i("Kizunat", "Feilure")
-        }
-        .addOnCompleteListener {
-            Log.i("Kizunat", "Complete")
-        }
+            allergies = selectedAllergies,
+            activity_level = selectedActivity,
+            mail = user.email
+        )
 
-}
-
-fun Timestamp(parseDateToTimestamp: Timestamp): Timestamp {
-    return parseDateToTimestamp
+        db.collection("users").document(it).set(userData)
+            .addOnSuccessListener {
+                Log.i("Kizunat", "Success")
+            }
+            .addOnFailureListener {
+                Log.i("Kizunat", "Failure: ${it.message}")
+            }
+    }
 }
 
 

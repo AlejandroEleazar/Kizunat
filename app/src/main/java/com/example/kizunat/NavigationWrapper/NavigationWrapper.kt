@@ -46,6 +46,7 @@ fun NavigationWrapper(auth: FirebaseAuth, db: FirebaseFirestore) {
             FormScreen(
                 navigateToHome = {navController.navigate(Home)},
                 db,
+                auth
                 //detail.name
             )
         }
@@ -68,10 +69,11 @@ fun NavigationWrapper(auth: FirebaseAuth, db: FirebaseFirestore) {
 
         composable<Profile> {
             ProfileScreen(
-                navigateToHome = {navController.navigate(Home)},
-                navigateToMenu = {navController.navigate(Menu)},
-                navigateToProfile = {navController.navigate(Profile)},
-                navigateToEditProfile = {navController.navigate(EditProfile)}
+                db,
+                navigateToHome = { navController.navigate(Home) },
+                navigateToMenu = { navController.navigate(Menu) },
+                navigateToProfile = { navController.navigate(Profile) },
+                navigateToEditProfile = { navController.navigate(EditProfile) }
             )
         }
 
