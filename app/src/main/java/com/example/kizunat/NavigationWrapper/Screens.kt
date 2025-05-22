@@ -10,10 +10,14 @@ data class LoginSignup (
     val log : Boolean
 )
 
+/*
 @Serializable
 data class Form (
     val name : String
-)
+)*/
+
+@Serializable
+object Form
 
 @Serializable
 object Home

@@ -1,5 +1,6 @@
 package com.example.kizunat.AppScreens.LogIn
 
+import android.util.Log
 import android.widget.DatePicker
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.kizunat.R
 import com.example.kizunat.User.User
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.*
@@ -31,7 +33,7 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FormScreen(navigateToHome: () -> Unit, db: FirebaseFirestore, name: String) {
+fun FormScreen(navigateToHome: () -> Unit, db: FirebaseFirestore, /*name: String*/) {
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
 
@@ -39,7 +41,7 @@ fun FormScreen(navigateToHome: () -> Unit, db: FirebaseFirestore, name: String) 
     var height by remember { mutableStateOf("") }
     var weight by remember { mutableStateOf("") }
     var selectedGender by remember { mutableStateOf("") }
-    var selectedAllergies by remember { mutableStateOf(setOf<String>()) }
+    var selectedAllergies by remember { mutableStateOf(listOf<String>()) }
     var selectedActivity by remember { mutableStateOf("") }
 
     var showGenderDialog by remember { mutableStateOf(false) }
@@ -92,7 +94,7 @@ fun FormScreen(navigateToHome: () -> Unit, db: FirebaseFirestore, name: String) 
                 Spacer(Modifier.height(32.dp))
 
                 // Date of Birth - se muestra normalmente el valor
-                FormFieldRow("Date of Birth", dateOfBirth, onClick = { datePicker.show() }) {
+                FormFieldRow("Date of Birth", dateOfBirth, onClick = { datePicker.show()  }) {
                     Icon(Icons.Default.DateRange, contentDescription = null, tint = Color.Gray)
                 }
                 Spacer(Modifier.height(24.dp))
@@ -100,6 +102,8 @@ fun FormScreen(navigateToHome: () -> Unit, db: FirebaseFirestore, name: String) 
                 // Gender - se muestra vacío aunque tenga seleccionado (valor guardado)
                 FormOptionRow("Gender", "") { showGenderDialog = true }
                 Spacer(Modifier.height(24.dp))
+
+                Log.i("Date", dateOfBirth)
 
                 // Height input
                 Column(modifier = Modifier.fillMaxWidth()) {
@@ -222,7 +226,7 @@ fun FormScreen(navigateToHome: () -> Unit, db: FirebaseFirestore, name: String) 
 
                 Button(
                     onClick = {
-                        saveUser(db, name, dateOfBirth, height, weight, selectedGender, selectedAllergies, selectedActivity)
+                        saveUser(db, "hola", dateOfBirth, height, weight, selectedGender, selectedAllergies, selectedActivity)
                         navigateToHome()
                     },
                     modifier = Modifier
@@ -381,11 +385,12 @@ private fun SimpleDialog(
 private fun MultiSelectDialog(
     title: String,
     options: List<String>,
-    selected: Set<String>,
+    selected: List<String>,
     onDismiss: () -> Unit,
-    onSelect: (Set<String>) -> Unit
+    onSelect: (List<String>) -> Unit
 ) {
-    var temp by remember { mutableStateOf(selected) }
+    var temp by remember { mutableStateOf(selected.toSet()) } // Internamente usar Set para lógica
+
     Dialog(onDismissRequest = onDismiss) {
         ElevatedCard(
             modifier = Modifier
@@ -421,7 +426,7 @@ private fun MultiSelectDialog(
                 }
                 Spacer(Modifier.height(24.dp))
                 Button(
-                    onClick = { onSelect(temp) },
+                    onClick = { onSelect(temp.toList()) }, // Convertir Set a List aquí
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF476730),
@@ -436,6 +441,7 @@ private fun MultiSelectDialog(
 }
 
 
+
 fun saveUser(
     db: FirebaseFirestore,
     name: String,
@@ -443,24 +449,40 @@ fun saveUser(
     height: String,
     weight: String,
     selectedGender: String,
-    selectedAllergies: Set<String>,
+    selectedAllergies: List<String>,
     selectedActivity: String
 ) {
 
     db.collection("users")
         .add(User(
             name = name,
-            date_of_birth = parseDate(dateOfBirth, "dd-MM-yyyy"),
+            date_of_birth = Timestamp(parseDateToTimestamp(dateOfBirth)),
             gender = selectedGender,
             height = height.toInt(),
             weight = weight.toInt(),
             allerges =  selectedAllergies,
             activity_level = selectedActivity
         ))
+        .addOnSuccessListener {
+            Log.i("Kizunat", "Success")
+        }
+        .addOnFailureListener {
+            Log.i("Kizunat", "Feilure")
+        }
+        .addOnCompleteListener {
+            Log.i("Kizunat", "Complete")
+        }
 
 }
 
-fun parseDate(dateString: String, format: String): Date {
-    val dateFormat = SimpleDateFormat(format, Locale.getDefault())
-    return dateFormat.parse(dateString)
+fun Timestamp(parseDateToTimestamp: Timestamp): Timestamp {
+    return parseDateToTimestamp
+}
+
+
+fun parseDateToTimestamp(dateString: String, format: String = "d/M/yyyy"): Timestamp {
+    val formatter = SimpleDateFormat(format, Locale.getDefault())
+    formatter.isLenient = false
+    val date = formatter.parse(dateString.trim())
+    return Timestamp(date)
 }

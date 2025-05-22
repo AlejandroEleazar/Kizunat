@@ -140,7 +140,7 @@ fun AuthScreen(
                                         navigateToHome()
                                     }
                                     else{
-                                        Log.d("Error", "ERROR")
+                                        Log.d("Error", "ERROR al hacer Log In")
                                     }
                                 }
 
@@ -150,7 +150,7 @@ fun AuthScreen(
                                         navigateToForm(name)
                                     }
                                     else{
-                                        Log.d("Error", "ERROR")
+                                        Log.d("Error", "ERROR al hacer Sign Up")
                                     }
                                 }
 
@@ -260,7 +260,7 @@ private fun FormInputRow(
             TextField(
                 value = value,
                 onValueChange = onValueChange,
-                modifier = Modifier.width(223.dp),
+                modifier = Modifier.width(215.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.Transparent,
@@ -303,7 +303,7 @@ private fun PasswordInputRow(
             TextField(
                 value = value,
                 onValueChange = onValueChange,
-                modifier = Modifier.width(223.dp),
+                modifier = Modifier.width(215.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {

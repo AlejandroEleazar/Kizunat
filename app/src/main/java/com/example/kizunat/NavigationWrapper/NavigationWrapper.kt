@@ -13,13 +13,11 @@ import com.example.kizunat.AppScreens.Menu.MenuScreen
 import com.example.kizunat.AppScreens.Profile.ProfileScreen
 import com.example.kizunat.AppScreens.Welcome.welcome
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
-fun NavigationWrapper(auth: FirebaseAuth) {
+fun NavigationWrapper(auth: FirebaseAuth, db: FirebaseFirestore) {
     val navController = rememberNavController()
-    val db = Firebase.firestore
 
     NavHost(navController = navController, startDestination = Welcome){
 
@@ -39,20 +37,16 @@ fun NavigationWrapper(auth: FirebaseAuth) {
                 auth,
                 navigateToHome = {navController.navigate(Home)},
                 navigateToForm = {
-                    name -> navController.navigate(
-                        Form(name = name)
-                    )},
+                    navController.navigate(Form)},
                 detail.log
-
             )
         }
 
-        composable<Form> {backStackEntry ->
-            var detail = backStackEntry.toRoute<Form>()
+        composable<Form> {
             FormScreen(
                 navigateToHome = {navController.navigate(Home)},
                 db,
-                detail.name
+                //detail.name
             )
         }
 
