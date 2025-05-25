@@ -473,8 +473,9 @@ fun saveUser(
             activity_level = selectedActivity,
             mail = user.email
         )
-
+        Log.i("ID", it)
         db.collection("users").document(it).set(userData)
+
             .addOnSuccessListener {
                 Log.i("Kizunat", "Success")
             }

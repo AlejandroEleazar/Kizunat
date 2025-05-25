@@ -1,5 +1,6 @@
 package com.example.kizunat.AppScreens.Profile
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -70,17 +71,27 @@ fun ProfileScreen(
 }
 
 @Composable
-fun ProfileContent(padding: PaddingValues, navigateToEditProfile: () -> Unit, db: FirebaseFirestore) {
+fun ProfileContent(
+    padding: PaddingValues,
+    navigateToEditProfile: () -> Unit,
+    db: FirebaseFirestore
+) {
+    var user by remember { mutableStateOf<User?>(null) }
+    val uid = FirebaseAuth.getInstance().currentUser?.uid
 
-    var userInfo by remember { mutableStateOf<User?>(null) }
-
-    LaunchedEffect(Unit) {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid
+    LaunchedEffect(uid) {
         if (uid != null) {
-            userInfo = getUserInfo(db, uid)
+            try {
+                val snapshot = db.collection("users").document(uid).get().await()
+                user = snapshot.toObject(User::class.java)
+                Log.d("Firestore", "Usuario cargado: $user")
+            } catch (e: Exception) {
+                Log.e("Firestore", "Error al obtener el usuario", e)
+            }
+        } else {
+            Log.e("Auth", "Usuario no autenticado")
         }
     }
-
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
@@ -90,14 +101,12 @@ fun ProfileContent(padding: PaddingValues, navigateToEditProfile: () -> Unit, db
             contentScale = ContentScale.Crop
         )
 
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 120.dp),  // Reducido el padding superior
+                .padding(top = 120.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             Spacer(modifier = Modifier.height(155.dp))
 
             Box(
@@ -122,26 +131,25 @@ fun ProfileContent(padding: PaddingValues, navigateToEditProfile: () -> Unit, db
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
                         Spacer(Modifier.height(10.dp))
-                        InfoRow(Icons.Default.Person, /*name*/ userInfo?.name.toString())
+                        InfoRow(Icons.Default.Person, user?.name ?: "Cargando...")
                         Divider(color = Color(0xFF476730), thickness = 1.dp)
-                        InfoRow(Icons.Default.Straighten, /*height*/ userInfo?.height.toString())
+                        InfoRow(Icons.Default.Straighten, user?.height?.toString() ?: "...")
                         Divider(color = Color(0xFF476730), thickness = 1.dp)
-                        InfoRow(Icons.Default.FitnessCenter, /*weight*/ userInfo?.weight.toString())
+                        InfoRow(Icons.Default.FitnessCenter, user?.weight?.toString() ?: "...")
                         Divider(color = Color(0xFF476730), thickness = 1.dp)
-                        InfoRow(Icons.Default.Email, /*mail*/ userInfo?.mail.toString())
+                        InfoRow(Icons.Default.Email, user?.mail ?: "...")
                         Divider(color = Color(0xFF476730), thickness = 1.dp)
                     }
                 }
 
-
                 // Círculo de la persona
                 ElevatedCard(
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp), // más alto
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
                     shape = CircleShape,
                     modifier = Modifier
                         .size(180.dp)
                         .offset(y = (-80).dp)
-                        .background(Color.Transparent) // sin fondo adicional
+                        .background(Color.Transparent)
                 ) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -156,15 +164,14 @@ fun ProfileContent(padding: PaddingValues, navigateToEditProfile: () -> Unit, db
                     }
                 }
 
-                // Círculo de la persona
+                // Botón editar
                 ElevatedCard(
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp), // más alto
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
                     shape = CircleShape,
                     modifier = Modifier
                         .size(55.dp)
                         .offset(y = (-90).dp, x = 140.dp)
                         .background(Color.Transparent),
-
                     colors = CardDefaults.cardColors(
                         containerColor = Color(0xFFFFFFFF)
                     )
@@ -177,7 +184,9 @@ fun ProfileContent(padding: PaddingValues, navigateToEditProfile: () -> Unit, db
                             imageVector = Icons.Default.Edit,
                             contentDescription = "Edit",
                             tint = Color(0xFF476730),
-                            modifier = Modifier.size(26.dp).clickable { navigateToEditProfile() }
+                            modifier = Modifier
+                                .size(26.dp)
+                                .clickable { navigateToEditProfile() }
                         )
                     }
                 }
@@ -185,7 +194,6 @@ fun ProfileContent(padding: PaddingValues, navigateToEditProfile: () -> Unit, db
         }
     }
 }
-
 
 @Composable
 fun InfoRow(icon: ImageVector, value: String) {
