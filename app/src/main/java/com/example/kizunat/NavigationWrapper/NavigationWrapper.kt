@@ -53,6 +53,7 @@ fun NavigationWrapper(auth: FirebaseAuth, db: FirebaseFirestore) {
 
         composable<Home> {
             HomeScreen(
+                db,
                 navigateToHome = {navController.navigate(Home)},
                 navigateToMenu = {navController.navigate(Menu)},
                 navigateToProfile = {navController.navigate(Profile)}
@@ -61,6 +62,7 @@ fun NavigationWrapper(auth: FirebaseAuth, db: FirebaseFirestore) {
 
         composable<Menu> {
             MenuScreen(
+                db,
                 navigateToHome = {navController.navigate(Home)},
                 navigateToMenu = {navController.navigate(Menu)},
                 navigateToProfile = {navController.navigate(Profile)}

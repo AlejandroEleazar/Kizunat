@@ -1,5 +1,6 @@
 package com.example.kizunat.AppScreens.Home
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -31,6 +32,7 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,13 +48,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kizunat.AppScreens.CustomScaffold
+import com.example.kizunat.Model.Menu.Menu
 import com.example.kizunat.R
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 @Composable
 fun HomeScreen(
+    db: FirebaseFirestore,
     navigateToHome: () -> Unit,
     navigateToMenu: () -> Unit,
     navigateToProfile: () -> Unit
@@ -62,12 +69,12 @@ fun HomeScreen(
         navigateToMenu,
         navigateToProfile
     ) { padding ->
-        Content(padding)
+        Content(padding, db)
     }
 }
 
 @Composable
-fun Content(padding: PaddingValues) {
+fun Content(padding: PaddingValues, db: FirebaseFirestore) {
     val currentDate = remember {
         SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
     }
@@ -86,6 +93,22 @@ fun Content(padding: PaddingValues) {
     }
 
     val currentMeal = meals.getOrNull(currentIndex) ?: meals.first()
+    var menu by remember { mutableStateOf<Menu?>(null) }
+    val uid = FirebaseAuth.getInstance().currentUser?.uid
+
+    LaunchedEffect(uid) {
+        if (uid != null) {
+            try {
+                val snapshot = db.collection("menu").document(uid).get().await()
+                menu = snapshot.toObject(Menu::class.java)
+                Log.d("Firestore", "Usuario cargado: $menu")
+            } catch (e: Exception) {
+                Log.e("Firestore", "Error al obtener el usuario", e)
+            }
+        } else {
+            Log.e("Auth", "Usuario no autenticado")
+        }
+    }
 
     Box(
         modifier = Modifier

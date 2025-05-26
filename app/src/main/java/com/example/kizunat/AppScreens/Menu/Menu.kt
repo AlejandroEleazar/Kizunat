@@ -1,5 +1,6 @@
 package com.example.kizunat.AppScreens.Menu
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,10 +25,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kizunat.AppScreens.CustomScaffold
+import com.example.kizunat.Model.Food.Food
+import com.example.kizunat.Model.Menu.Menu
 import com.example.kizunat.R
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun MenuScreen(
+    db: FirebaseFirestore,
     navigateToHome: () -> Unit,
     navigateToMenu: () -> Unit,
     navigateToProfile: () -> Unit
@@ -166,5 +172,32 @@ private fun MealRow(icon: ImageVector, label: String, foodName: String, backgrou
                 )
             }
         }
+    }
+}
+
+
+fun saveUser(
+    db: FirebaseFirestore,
+    //pasar datos para al macenar
+) {
+
+    val user = FirebaseAuth.getInstance().currentUser
+    val uid = user?.uid
+
+    uid?.let {
+        val menuData = Menu(
+            Food(name = "", img = R.drawable.bg, cal = 100),
+            Food(name = "", img = R.drawable.bg, cal = 100),
+            Food(name = "", img = R.drawable.bg, cal = 100)
+        )
+        Log.i("ID", it)
+        db.collection("menu").document(it).set(menuData)
+
+            .addOnSuccessListener {
+                Log.i("Kizunat", "Success")
+            }
+            .addOnFailureListener {
+                Log.i("Kizunat", "Failure: ${it.message}")
+            }
     }
 }
