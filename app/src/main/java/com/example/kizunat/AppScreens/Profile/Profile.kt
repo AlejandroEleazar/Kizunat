@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import com.example.kizunat.Model.User
+
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -47,9 +49,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kizunat.AppScreens.CustomScaffold
 import com.example.kizunat.R
-import com.example.kizunat.Model.User.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+
 import kotlinx.coroutines.tasks.await
 
 @Composable
@@ -59,14 +61,13 @@ fun ProfileScreen(
     navigateToProfile: () -> Unit,
     navigateToMenu: () -> Unit,
     navigateToEditProfile: () -> Unit,
-
 ){
     CustomScaffold(
         navigateToHome,
         navigateToMenu,
         navigateToProfile
     ) { padding ->
-        ProfileContent(padding,navigateToEditProfile,db)
+        ProfileContent(padding, navigateToEditProfile, db)
     }
 }
 
@@ -110,8 +111,7 @@ fun ProfileContent(
             Spacer(modifier = Modifier.height(155.dp))
 
             Box(
-                modifier = Modifier
-                    .fillMaxWidth(0.9f),
+                modifier = Modifier.fillMaxWidth(0.9f),
                 contentAlignment = Alignment.TopCenter
             ) {
                 ElevatedCard(
@@ -120,9 +120,7 @@ fun ProfileContent(
                         .fillMaxWidth()
                         .height(490.dp),
                     shape = RoundedCornerShape(40.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFFFFFFF)
-                    )
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF))
                 ) {
                     Column(
                         modifier = Modifier
@@ -142,7 +140,7 @@ fun ProfileContent(
                     }
                 }
 
-                // Círculo de la persona
+                // Círculo con icono persona
                 ElevatedCard(
                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
                     shape = CircleShape,
@@ -172,9 +170,7 @@ fun ProfileContent(
                         .size(55.dp)
                         .offset(y = (-90).dp, x = 140.dp)
                         .background(Color.Transparent),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFFFFFFF)
-                    )
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF))
                 ) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -209,10 +205,9 @@ fun InfoRow(icon: ImageVector, value: String) {
         Spacer(Modifier.width(24.dp))
         Text(
             text = value,
-            fontSize = 22.sp,  // Tamaño de texto aumentado
+            fontSize = 22.sp,
             fontWeight = FontWeight.SemiBold,
-            color = Color(0xFF2C3E22)  // Color de texto más oscuro
+            color = Color(0xFF2C3E22)
         )
     }
 }
-

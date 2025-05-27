@@ -1,6 +1,5 @@
 package com.example.kizunat.AppScreens.Menu
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,50 +19,55 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.kizunat.AppScreens.CustomScaffold
-import com.example.kizunat.Model.Food.Food
-import com.example.kizunat.Model.Menu.Menu
 import com.example.kizunat.R
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import com.example.kizunat.api.Recipe
 
 @Composable
 fun MenuScreen(
-    db: FirebaseFirestore,
     navigateToHome: () -> Unit,
     navigateToMenu: () -> Unit,
-    navigateToProfile: () -> Unit
+    navigateToProfile: () -> Unit,
+    viewModel: MenuViewModel = viewModel()
 ) {
+    val isLoading by viewModel.isLoading.collectAsState()
+    val meals by viewModel.weeklyMeals.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadWeeklyMeals()
+    }
+
     CustomScaffold(
         navigateToHome,
         navigateToMenu,
         navigateToProfile
     ) { padding ->
-        MenuContent(padding)
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+            MenuContent(padding, meals)
+        }
     }
 }
 
 @Composable
-fun MenuContent(padding: PaddingValues) {
+fun MenuContent(padding: PaddingValues, meals: List<List<Recipe>>) {
     var selectedDay by remember { mutableStateOf(0) }
-    val days = listOf(
-        "Monday", "Tuesday", "Wednesday",
-        "Thursday", "Friday", "Saturday", "Sunday"
-    )
 
-    val mealsPerDay = listOf(
-        Triple("Pancakes", "Chicken Salad", "Pasta"),
-        Triple("Smoothie Bowl", "Burrito Bowl", "Sushi"),
-        Triple("Toast & Eggs", "Veggie Wrap", "Steak"),
-        Triple("Yogurt Parfait", "Rice & Beans", "Pizza"),
-        Triple("Fruit Mix", "Grilled Chicken", "Curry"),
-        Triple("Waffles", "Tofu Stir Fry", "Burger"),
-        Triple("Bagel & Cream Cheese", "Poke Bowl", "Lasagna")
-    )
+    val days = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
@@ -113,27 +117,14 @@ fun MenuContent(padding: PaddingValues) {
                     verticalArrangement = Arrangement.spacedBy(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    val (breakfast, lunch, dinner) = mealsPerDay[selectedDay]
-                    MealRow(Icons.Default.LocalCafe, "Breakfast", breakfast, Color(0xFFEDEFE4))
-                    MealRow(Icons.Default.Fastfood, "Lunch", lunch, Color(0xFFEDEFE4))
-                    MealRow(Icons.Default.Bedtime, "Dinner", dinner, Color(0xFFEDEFE4))
+                    val dayMeals = meals.getOrNull(selectedDay) ?: emptyList()
 
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Button(
-                        onClick = { /**/ },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF476730)),
-                        modifier = Modifier
-                            .height(48.dp)
-                            .width(200.dp),
-                        shape = RoundedCornerShape(24.dp)
-                    ) {
-                        Text(
-                            text = "Save",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color.White
-                        )
+                    if (dayMeals.size == 3) {
+                        MealRow(Icons.Default.LocalCafe, "Breakfast", dayMeals[0])
+                        MealRow(Icons.Default.Fastfood, "Lunch", dayMeals[1])
+                        MealRow(Icons.Default.Bedtime, "Dinner", dayMeals[2])
+                    } else {
+                        Text("No meals available", modifier = Modifier.padding(16.dp))
                     }
                 }
             }
@@ -142,12 +133,12 @@ fun MenuContent(padding: PaddingValues) {
 }
 
 @Composable
-private fun MealRow(icon: ImageVector, label: String, foodName: String, backgroundColor: Color) {
+fun MealRow(icon: ImageVector, label: String, recipe: Recipe) {
     Box(
         modifier = Modifier
             .fillMaxWidth(0.8f)
             .shadow(elevation = 12.dp, shape = RoundedCornerShape(36.dp))
-            .background(color = backgroundColor, shape = RoundedCornerShape(36.dp))
+            .background(color = Color(0xFFEDEFE4), shape = RoundedCornerShape(36.dp))
             .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -166,38 +157,16 @@ private fun MealRow(icon: ImageVector, label: String, foodName: String, backgrou
                     color = Color(0xFF476730)
                 )
                 Text(
-                    text = foodName,
+                    text = recipe.label,
                     fontSize = 16.sp,
                     color = Color.Gray
                 )
+                Text(
+                    text = "${recipe.calories.toInt()} kcal",
+                    fontSize = 14.sp,
+                    color = Color.DarkGray
+                )
             }
         }
-    }
-}
-
-
-fun saveUser(
-    db: FirebaseFirestore,
-    //pasar datos para al macenar
-) {
-
-    val user = FirebaseAuth.getInstance().currentUser
-    val uid = user?.uid
-
-    uid?.let {
-        val menuData = Menu(
-            Food(name = "", img = R.drawable.bg, cal = 100),
-            Food(name = "", img = R.drawable.bg, cal = 100),
-            Food(name = "", img = R.drawable.bg, cal = 100)
-        )
-        Log.i("ID", it)
-        db.collection("menu").document(it).set(menuData)
-
-            .addOnSuccessListener {
-                Log.i("Kizunat", "Success")
-            }
-            .addOnFailureListener {
-                Log.i("Kizunat", "Failure: ${it.message}")
-            }
     }
 }

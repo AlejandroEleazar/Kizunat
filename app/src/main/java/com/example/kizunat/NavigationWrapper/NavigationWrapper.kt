@@ -1,10 +1,11 @@
 package com.example.kizunat.NavigationWrapper
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
+import androidx.navigation.navArgument
 import com.example.kizunat.AppScreens.LogIn.AuthScreen
 import com.example.kizunat.AppScreens.Profile.EditProfileScreen
 import com.example.kizunat.AppScreens.LogIn.FormScreen
@@ -19,71 +20,93 @@ import com.google.firebase.firestore.FirebaseFirestore
 fun NavigationWrapper(auth: FirebaseAuth, db: FirebaseFirestore) {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = Welcome){
+    NavHost(navController = navController, startDestination = Welcome.route()) {
 
-        composable<Welcome>{
+        composable(Welcome.route()) {
             welcome(
-                navigateToLogIn = {
-                    log -> navController.navigate(
-                        LoginSignup( log = log)
-                    )
+                navigateToLogIn = { log ->
+                    navController.navigate(LoginSignup.createRoute(log))
                 }
             )
         }
 
-        composable<LoginSignup> { backStackEntry ->
-            val detail = backStackEntry.toRoute<LoginSignup>()
+        composable(
+            route = "loginSignup/{log}",
+            arguments = listOf(navArgument("log") { type = NavType.BoolType })
+        ) { backStackEntry ->
+            val log = backStackEntry.arguments?.getBoolean("log") ?: false
             AuthScreen(
-                auth,
-                navigateToHome = {navController.navigate(Home)},
-                navigateToForm = { name ->
-                    navController.navigate(Form(name = name))},
-                detail.log
+                auth = auth,
+                navigateToHome = { navController.navigate(Home.route()) },
+                navigateToForm = { name -> navController.navigate(Form.createRoute(name)) },
+                log = log
             )
         }
 
-        composable<Form> { backStackEntry2 ->
-            val detail2 = backStackEntry2.toRoute<Form>()
+        composable(
+            route = "form/{name}",
+            arguments = listOf(navArgument("name") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val name = backStackEntry.arguments?.getString("name") ?: ""
             FormScreen(
-                navigateToHome = {navController.navigate(Home)},
-                db,
-                detail2.name
+                navigateToHome = { navController.navigate(Home.route()) },
+                db = db,
+                name = name
             )
         }
 
-        composable<Home> {
+        composable(Home.route()) {
             HomeScreen(
-                db,
-                navigateToHome = {navController.navigate(Home)},
-                navigateToMenu = {navController.navigate(Menu)},
-                navigateToProfile = {navController.navigate(Profile)}
+                db = db,
+                navigateToHome = { navController.navigate(Home.route()) },
+                navigateToMenu = { navController.navigate(Menu.route()) },
+                navigateToProfile = { navController.navigate(Profile.route()) }
             )
         }
 
-        composable<Menu> {
+        composable(Menu.route()) {
             MenuScreen(
-                db,
-                navigateToHome = {navController.navigate(Home)},
-                navigateToMenu = {navController.navigate(Menu)},
-                navigateToProfile = {navController.navigate(Profile)}
+                navigateToHome = { navController.navigate(Home.route()) },
+                navigateToMenu = { navController.navigate(Menu.route()) },
+                navigateToProfile = { navController.navigate(Profile.route()) }
             )
         }
 
-        composable<Profile> {
+        composable(Profile.route()) {
             ProfileScreen(
-                db,
-                navigateToHome = { navController.navigate(Home) },
-                navigateToMenu = { navController.navigate(Menu) },
-                navigateToProfile = { navController.navigate(Profile) },
-                navigateToEditProfile = { navController.navigate(EditProfile) }
+                db = db,
+                navigateToHome = { navController.navigate(Home.route()) },
+                navigateToMenu = { navController.navigate(Menu.route()) },
+                navigateToProfile = { navController.navigate(Profile.route()) },
+                navigateToEditProfile = { navController.navigate(EditProfile.route()) }
             )
         }
 
-        composable<EditProfile> {
+        composable(EditProfile.route()) {
             EditProfileScreen(
-                db,
-                navigateBack = {navController.popBackStack()}
+                db = db,
+                navigateBack = { navController.popBackStack() }
             )
         }
     }
 }
+
+// Rutas
+
+fun Welcome.route() = "welcome"
+
+fun LoginSignup.route() = "loginSignup/${log}"
+
+fun LoginSignup.Companion.createRoute(log: Boolean) = "loginSignup/$log"
+
+fun Form.route() = "form/${name}"
+
+fun Form.Companion.createRoute(name: String) = "form/$name"
+
+fun Home.route() = "home"
+
+fun Menu.route() = "menu"
+
+fun Profile.route() = "profile"
+
+fun EditProfile.route() = "editProfile"
