@@ -32,22 +32,22 @@ fun NavigationWrapper(auth: FirebaseAuth, db: FirebaseFirestore) {
         }
 
         composable<LoginSignup> { backStackEntry ->
-            var detail = backStackEntry.toRoute<LoginSignup>()
+            val detail = backStackEntry.toRoute<LoginSignup>()
             AuthScreen(
                 auth,
                 navigateToHome = {navController.navigate(Home)},
-                navigateToForm = {
-                    navController.navigate(Form)},
+                navigateToForm = { name ->
+                    navController.navigate(Form(name = name))},
                 detail.log
             )
         }
 
-        composable<Form> {
+        composable<Form> { backStackEntry2 ->
+            val detail2 = backStackEntry2.toRoute<Form>()
             FormScreen(
                 navigateToHome = {navController.navigate(Home)},
                 db,
-                auth
-                //detail.name
+                detail2.name
             )
         }
 
@@ -81,6 +81,7 @@ fun NavigationWrapper(auth: FirebaseAuth, db: FirebaseFirestore) {
 
         composable<EditProfile> {
             EditProfileScreen(
+                db,
                 navigateBack = {navController.popBackStack()}
             )
         }

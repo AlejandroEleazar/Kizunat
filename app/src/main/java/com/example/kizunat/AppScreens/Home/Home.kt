@@ -227,7 +227,7 @@ fun MealCard(date: String, meal: Meal) {
                 Spacer(Modifier.height(20.dp))
 
                 Text(
-                    "${meal.name}",
+                    meal.name,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     color = Color(0xFF476730),

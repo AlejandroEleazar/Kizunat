@@ -26,8 +26,8 @@ import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,7 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kizunat.AppScreens.CustomScaffold
 import com.example.kizunat.R
-import com.example.kizunat.User.User
+import com.example.kizunat.Model.User.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -104,7 +104,7 @@ fun ProfileContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 120.dp),
+                .padding(top = 140.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(155.dp))
@@ -132,13 +132,13 @@ fun ProfileContent(
                     ) {
                         Spacer(Modifier.height(10.dp))
                         InfoRow(Icons.Default.Person, user?.name ?: "Cargando...")
-                        Divider(color = Color(0xFF476730), thickness = 1.dp)
+                        HorizontalDivider(color = Color(0xFF476730), thickness = 1.dp)
                         InfoRow(Icons.Default.Straighten, user?.height?.toString() ?: "...")
-                        Divider(color = Color(0xFF476730), thickness = 1.dp)
+                        HorizontalDivider(color = Color(0xFF476730), thickness = 1.dp)
                         InfoRow(Icons.Default.FitnessCenter, user?.weight?.toString() ?: "...")
-                        Divider(color = Color(0xFF476730), thickness = 1.dp)
+                        HorizontalDivider(color = Color(0xFF476730), thickness = 1.dp)
                         InfoRow(Icons.Default.Email, user?.mail ?: "...")
-                        Divider(color = Color(0xFF476730), thickness = 1.dp)
+                        HorizontalDivider(color = Color(0xFF476730), thickness = 1.dp)
                     }
                 }
 
@@ -214,11 +214,5 @@ fun InfoRow(icon: ImageVector, value: String) {
             color = Color(0xFF2C3E22)  // Color de texto más oscuro
         )
     }
-}
-
-
-suspend fun getUserInfo(db: FirebaseFirestore, uid: String): User? {
-    val snapshot = db.collection("users").document(uid).get().await()
-    return snapshot.toObject(User::class.java)
 }
 

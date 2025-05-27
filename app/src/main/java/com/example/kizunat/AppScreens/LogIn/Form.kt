@@ -8,7 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,20 +24,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.kizunat.R
-import com.example.kizunat.User.User
-import com.google.firebase.Timestamp
+import com.example.kizunat.Model.User.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import java.text.SimpleDateFormat
 import java.util.*
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun FormScreen(
     navigateToHome: () -> Unit,
-    db: FirebaseFirestore, /*name: String*/
-    auth: FirebaseAuth,
+    db: FirebaseFirestore,
+    name: String,
 ) {
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
@@ -146,7 +144,7 @@ fun FormScreen(
                             colors = OutlinedTextFieldDefaults.colors()
                         )
                     }
-                    Divider(
+                    HorizontalDivider(
                         color = Color.LightGray,
                         thickness = 1.dp,
                         modifier = Modifier.padding(top = 6.dp)
@@ -199,7 +197,7 @@ fun FormScreen(
                             colors = OutlinedTextFieldDefaults.colors()
                         )
                     }
-                    Divider(
+                    HorizontalDivider(
                         color = Color.LightGray,
                         thickness = 1.dp,
                         modifier = Modifier.padding(top = 6.dp)
@@ -231,7 +229,7 @@ fun FormScreen(
 
                 Button(
                     onClick = {
-                        saveUser(db, "hola", dateOfBirth, height, weight, selectedGender, selectedAllergies, selectedActivity, auth)
+                        saveUser(db, name, dateOfBirth, height, weight, selectedGender, selectedAllergies, selectedActivity)
                         navigateToHome()
                     },
                     modifier = Modifier
@@ -309,7 +307,7 @@ private fun FormFieldRow(
             Spacer(Modifier.width(12.dp))
             trailingIcon()
         }
-        Divider(color = Color.LightGray, thickness = 1.dp, modifier = Modifier.padding(top = 6.dp))
+        HorizontalDivider(color = Color.LightGray, thickness = 1.dp, modifier = Modifier.padding(top = 6.dp))
     }
 }
 
@@ -321,7 +319,7 @@ private fun FormOptionRow(
 ) {
     FormFieldRow(label, value, onClick) {
         Icon(
-            imageVector = Icons.Default.ArrowForwardIos,
+            imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
             contentDescription = null,
             tint = Color.Gray,
             modifier = Modifier.size(18.dp)
@@ -456,7 +454,6 @@ fun saveUser(
     selectedGender: String,
     selectedAllergies: List<String>,
     selectedActivity: String,
-    auth: FirebaseAuth
 ) {
 
     val user = FirebaseAuth.getInstance().currentUser
@@ -465,12 +462,12 @@ fun saveUser(
     uid?.let {
         val userData = User(
             name = name,
-            date_of_birth = parseDateToTimestamp(dateOfBirth),
+            dateOfBirth = dateOfBirth,
             gender = selectedGender,
             height = height.toInt(),
             weight = weight.toInt(),
             allergies = selectedAllergies,
-            activity_level = selectedActivity,
+            activityLevel = selectedActivity,
             mail = user.email
         )
         Log.i("ID", it)
@@ -483,12 +480,4 @@ fun saveUser(
                 Log.i("Kizunat", "Failure: ${it.message}")
             }
     }
-}
-
-
-fun parseDateToTimestamp(dateString: String, format: String = "d/M/yyyy"): Timestamp {
-    val formatter = SimpleDateFormat(format, Locale.getDefault())
-    formatter.isLenient = false
-    val date = formatter.parse(dateString.trim())
-    return Timestamp(date)
 }

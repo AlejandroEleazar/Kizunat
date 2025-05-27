@@ -22,8 +22,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -136,7 +136,7 @@ fun AuthScreen(
                         onClick = {
                             if (check) {
                                 auth.signInWithEmailAndPassword(mail, password).addOnCompleteListener { task ->
-                                    if (task.isSuccessful){
+                                    if (task.isSuccessful && auth.currentUser != null) {
                                         navigateToHome()
                                     }
                                     else{
@@ -146,7 +146,7 @@ fun AuthScreen(
 
                             }else{
                                 auth.createUserWithEmailAndPassword(mail, password).addOnCompleteListener{ task ->
-                                    if (task.isSuccessful){
+                                    if (task.isSuccessful && auth.currentUser != null) {
                                         navigateToForm(name)
                                     }
                                     else{
@@ -270,7 +270,7 @@ private fun FormInputRow(
                 )
             )
         }
-        Divider(
+        HorizontalDivider(
             color = Color.LightGray,
             thickness = 1.dp,
             modifier = Modifier.padding(top = 6.dp)
@@ -323,7 +323,7 @@ private fun PasswordInputRow(
             )
         }
 
-        Divider(
+        HorizontalDivider(
             color = Color.LightGray,
             thickness = 1.dp,
             modifier = Modifier.padding(top = 6.dp)
