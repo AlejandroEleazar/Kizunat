@@ -1,5 +1,6 @@
 package com.example.kizunat.AppScreens.Menu
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.kizunat.api.EdamamApi
@@ -7,11 +8,10 @@ import com.example.kizunat.api.Recipe
 import com.example.kizunat.repository.AllergyRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import android.util.Log
-import com.google.firebase.firestore.SetOptions
 
 data class DayMeals(
     val breakfasts: List<Recipe>,
@@ -20,6 +20,7 @@ data class DayMeals(
 )
 
 class MenuViewModel : ViewModel() {
+
     private val _weeklyMeals = MutableStateFlow(List(7) {
         DayMeals(emptyList(), emptyList(), emptyList())
     })
@@ -38,23 +39,54 @@ class MenuViewModel : ViewModel() {
     fun loadWeeklyMeals() {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
         _isLoading.value = true
+
         viewModelScope.launch {
-            val allergies = AllergyRepository.getUserAllergies(uid)
+            try {
+                val allergies = AllergyRepository.getUserAllergies(uid)
+                Log.d("MenuViewModel", "✅ Alergias del usuario: $allergies")
 
-            val breakfasts = EdamamApi.fetchBreakfast(allergies)
-            val lunches = EdamamApi.fetchLunch(allergies)
-            val dinners = EdamamApi.fetchDinner(allergies)
+                val breakfasts = try {
+                    EdamamApi.fetchBreakfast(allergies).also {
+                        Log.d("EdamamApi", "✅ Breakfast cargado (${it.size} recetas)")
+                    }
+                } catch (e: Exception) {
+                    Log.e("EdamamApi", "❌ Error fetching breakfast: ${e.message}")
+                    emptyList()
+                }
 
-            val weekMeals = List(7) {
-                DayMeals(
-                    breakfasts = breakfasts.shuffled().take(3),
-                    lunches = lunches.shuffled().take(3),
-                    dinners = dinners.shuffled().take(3)
-                )
+                val lunches = try {
+                    EdamamApi.fetchLunch(allergies).also {
+                        Log.d("EdamamApi", "✅ Lunch cargado (${it.size} recetas)")
+                    }
+                } catch (e: Exception) {
+                    Log.e("EdamamApi", "❌ Error fetching lunch: ${e.message}")
+                    emptyList()
+                }
+
+                val dinners = try {
+                    EdamamApi.fetchDinner(allergies).also {
+                        Log.d("EdamamApi", "✅ Dinner cargado (${it.size} recetas)")
+                    }
+                } catch (e: Exception) {
+                    Log.e("EdamamApi", "❌ Error fetching dinner: ${e.message}")
+                    emptyList()
+                }
+
+                val weekMeals = List(7) {
+                    DayMeals(
+                        breakfasts = breakfasts.shuffled().take(3),
+                        lunches = lunches.shuffled().take(3),
+                        dinners = dinners.shuffled().take(3)
+                    )
+                }
+
+                _weeklyMeals.value = weekMeals
+                Log.d("MenuViewModel", "✅ Comidas cargadas (incluso si alguna categoría falló)")
+            } catch (e: Exception) {
+                Log.e("MenuViewModel", "❌ Error general al cargar comidas: ${e.message}", e)
+            } finally {
+                _isLoading.value = false
             }
-
-            _weeklyMeals.value = weekMeals
-            _isLoading.value = false
         }
     }
 
@@ -74,7 +106,7 @@ class MenuViewModel : ViewModel() {
             else -> dayMeals[2]
         }
 
-        val newIndex = (currentIndex + 1) % maxIndex
+        val newIndex = if (maxIndex == 0) 0 else (currentIndex + 1) % maxIndex
 
         when (mealType) {
             "breakfast" -> dayMeals[0] = newIndex
@@ -112,11 +144,10 @@ class MenuViewModel : ViewModel() {
         firestore.collection("menus").document(user.uid)
             .set(data, SetOptions.merge())
             .addOnSuccessListener {
-                Log.d("MenuViewModel", "Menú guardado correctamente")
+                Log.d("MenuViewModel", "✅ Menú guardado correctamente")
             }
             .addOnFailureListener { e ->
-                Log.e("MenuViewModel", "Error al guardar el menú: ${e.message}")
+                Log.e("MenuViewModel", "❌ Error al guardar el menú: ${e.message}")
             }
     }
-
 }

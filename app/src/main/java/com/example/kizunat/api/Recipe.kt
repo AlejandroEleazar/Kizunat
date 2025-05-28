@@ -14,6 +14,7 @@ data class Hit(
 )
 
 data class Recipe(
-    @Json(name = "label")    val label: String,
-    @Json(name = "calories") val calories: Double
+    @Json(name = "label") val label: String,
+    @Json(name = "calories") val calories: Double,
+    @Json(name = "ingredientLines") val ingredientLines: List<String>
 )
