@@ -13,11 +13,16 @@ object EdamamApi {
     private fun excludedParam(allergies: List<String>) =
         allergies.takeIf { it.isNotEmpty() }?.joinToString(",")
 
-    suspend fun fetchBreakfast(allergies: List<String>) = fetchByMeal("breakfast", allergies)
-    suspend fun fetchLunch(allergies: List<String>)     = fetchByMeal("lunch",     allergies)
-    suspend fun fetchDinner(allergies: List<String>)    = fetchByMeal("dinner",    allergies)
+    suspend fun fetchBreakfast(allergies: List<String>, maxResults: Int = 5) =
+        fetchByMeal("breakfast", allergies, maxResults)
 
-    private suspend fun fetchByMeal(meal: String, allergies: List<String>) = try {
+    suspend fun fetchLunch(allergies: List<String>, maxResults: Int = 5) =
+        fetchByMeal("lunch", allergies, maxResults)
+
+    suspend fun fetchDinner(allergies: List<String>, maxResults: Int = 5) =
+        fetchByMeal("dinner", allergies, maxResults)
+
+    private suspend fun fetchByMeal(meal: String, allergies: List<String>, maxResults: Int): List<Recipe> = try {
         withContext(Dispatchers.IO) {
             val resp = service.getRecipes(
                 query    = meal,
@@ -25,7 +30,7 @@ object EdamamApi {
                 appKey   = APP_KEY,
                 excluded = excludedParam(allergies)
             )
-            resp.hits.map { it.recipe }
+            resp.hits.map { it.recipe }.take(maxResults)
         }
     } catch (e: Exception) {
         Log.e("EdamamApi", "Error fetching $meal: ${e.message}", e)

@@ -6,55 +6,128 @@ import com.example.kizunat.api.EdamamApi
 import com.example.kizunat.api.Recipe
 import com.example.kizunat.repository.AllergyRepository
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import android.util.Log
+
+data class DayMeals(
+    val breakfasts: List<Recipe>,
+    val lunches: List<Recipe>,
+    val dinners: List<Recipe>
+)
 
 class MenuViewModel : ViewModel() {
-    private val _weeklyMeals = MutableStateFlow(List(5) { listOf<Recipe>() })
-    val weeklyMeals: StateFlow<List<List<Recipe>>> = _weeklyMeals
+    private val _weeklyMeals = MutableStateFlow(List(7) {
+        DayMeals(emptyList(), emptyList(), emptyList())
+    })
+    val weeklyMeals: StateFlow<List<DayMeals>> = _weeklyMeals
 
-    private val _isLoading   = MutableStateFlow(false)
+    private val _currentIndexes = MutableStateFlow(
+        List(7) { listOf(0, 0, 0) } // for each day: [breakfastIndex, lunchIndex, dinnerIndex]
+    )
+    val currentIndexes: StateFlow<List<List<Int>>> = _currentIndexes
+
+    private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
+
+    private val firestore = FirebaseFirestore.getInstance()
 
     fun loadWeeklyMeals() {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
         _isLoading.value = true
         viewModelScope.launch {
             val allergies = AllergyRepository.getUserAllergies(uid)
-            val data = List(5) { dayIndex ->
-                // fetch and rotate to get different meals per day
-                val b = EdamamApi.fetchBreakfast(allergies).getOrNull(dayIndex % 5)
-                val l = EdamamApi.fetchLunch(allergies).getOrNull((dayIndex+1) % 5)
-                val d = EdamamApi.fetchDinner(allergies).getOrNull((dayIndex+2) % 5)
-                listOfNotNull(b,l,d)
+
+            val breakfasts = EdamamApi.fetchBreakfast(allergies)
+            val lunches = EdamamApi.fetchLunch(allergies)
+            val dinners = EdamamApi.fetchDinner(allergies)
+
+            val weekMeals = List(7) { dayIndex ->
+                DayMeals(
+                    breakfasts = breakfasts.shuffled().take(3),
+                    lunches = lunches.shuffled().take(3),
+                    dinners = dinners.shuffled().take(3)
+                )
             }
-            _weeklyMeals.value = data
+
+            _weeklyMeals.value = weekMeals
             _isLoading.value = false
         }
     }
-    // MenuViewModel.kt (añade dentro de la clase)
-    fun changeMeal(dayIndex: Int, mealType: String) {
-        // Aquí vuelves a pedir un nuevo plato para ese día y tipo
-        viewModelScope.launch {
-            val allergies = AllergyRepository.getUserAllergies(FirebaseAuth.getInstance().currentUser?.uid ?: return@launch)
-            val newRecipe = when (mealType) {
-                "breakfast" -> EdamamApi.fetchBreakfast(allergies).randomOrNull()
-                "lunch"     -> EdamamApi.fetchLunch(allergies).randomOrNull()
-                else        -> EdamamApi.fetchDinner(allergies).randomOrNull()
-            }
-            if (newRecipe != null) {
-                val updatedDay = _weeklyMeals.value.toMutableList()
-                val mealsForDay = updatedDay[dayIndex].toMutableList()
-                when (mealType) {
-                    "breakfast" -> if (mealsForDay.size > 0) mealsForDay[0] = newRecipe
-                    "lunch"     -> if (mealsForDay.size > 1) mealsForDay[1] = newRecipe
-                    "dinner"    -> if (mealsForDay.size > 2) mealsForDay[2] = newRecipe
-                }
-                updatedDay[dayIndex] = mealsForDay
-                _weeklyMeals.value = updatedDay
-            }
+
+    fun nextMeal(dayIndex: Int, mealType: String) {
+        val current = _currentIndexes.value.toMutableList()
+        val dayMeals = current[dayIndex].toMutableList()
+
+        val maxIndex = when (mealType) {
+            "breakfast" -> _weeklyMeals.value[dayIndex].breakfasts.size
+            "lunch" -> _weeklyMeals.value[dayIndex].lunches.size
+            else -> _weeklyMeals.value[dayIndex].dinners.size
         }
+
+        val currentIndex = when (mealType) {
+            "breakfast" -> dayMeals[0]
+            "lunch" -> dayMeals[1]
+            else -> dayMeals[2]
+        }
+
+        val newIndex = (currentIndex + 1) % maxIndex
+
+        when (mealType) {
+            "breakfast" -> dayMeals[0] = newIndex
+            "lunch" -> dayMeals[1] = newIndex
+            "dinner" -> dayMeals[2] = newIndex
+        }
+
+        current[dayIndex] = dayMeals
+        _currentIndexes.value = current
     }
 
+    fun setMeal(dayIndex: Int, mealType: String, newIndex: Int) {
+        val current = _currentIndexes.value.toMutableList()
+        val dayMeals = current[dayIndex].toMutableList()
+
+        when (mealType) {
+            "breakfast" -> dayMeals[0] = newIndex
+            "lunch" -> dayMeals[1] = newIndex
+            "dinner" -> dayMeals[2] = newIndex
+        }
+
+        current[dayIndex] = dayMeals
+        _currentIndexes.value = current
+    }
+
+    fun saveUserMenu(breakfast: Recipe, lunch: Recipe, dinner: Recipe) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        val menuData = hashMapOf(
+            "breakfast" to mapOf(
+                "label" to breakfast.label,
+                "calories" to breakfast.calories
+            ),
+            "lunch" to mapOf(
+                "label" to lunch.label,
+                "calories" to lunch.calories
+            ),
+            "dinner" to mapOf(
+                "label" to dinner.label,
+                "calories" to dinner.calories
+            ),
+            "timestamp" to System.currentTimeMillis()
+        )
+
+
+        firestore.collection("users")
+            .document(uid)
+            .collection("menus")
+            .add(menuData)
+            .addOnSuccessListener {
+                Log.d("MenuViewModel", "Menu guardado correctamente")
+            }
+            .addOnFailureListener { e ->
+                Log.e("MenuViewModel", "Error guardando menú", e)
+            }
+    }
 }

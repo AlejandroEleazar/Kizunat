@@ -10,6 +10,8 @@ interface RecipeService {
         @Query("q")       query: String,
         @Query("app_id")  appId: String,
         @Query("app_key") appKey: String,
-        @Query("excluded") excluded: String? = null
+        @Query("excluded") excluded: String? = null,
+        @Query("random") random: Boolean = true
     ): RecipesResponse
+
 }
