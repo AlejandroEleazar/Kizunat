@@ -1,52 +1,34 @@
 package com.example.kizunat.api
 
 import android.util.Log
-import com.example.kizunat.network.KtorClient
-import io.ktor.client.call.*
-import io.ktor.client.request.*
-import kotlinx.serialization.Serializable
+import com.example.kizunat.network.RetrofitClient
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 object EdamamApi {
-    private const val APP_ID = "efab9c70"
-    private const val APP_KEY = "fa64291ae5eba8538b85890add60ccae"
+    private const val APP_ID  = "9987b754"
+    private const val APP_KEY = "65c9299ec4f9dc2f3e613447f6f20f26"
+    private val service = RetrofitClient.retrofit.create(RecipeService::class.java)
 
-    suspend fun fetchRecipes(queryTerms: List<String>, allergies: List<String>): List<Recipe> {
-        return try {
-            val query = queryTerms.joinToString(",")
-            val response: EdamamResponse = KtorClient.httpClient.get("https://api.edamam.com/api/recipes/v2") {
-                parameter("type", "public")
-                parameter("q", query)
-                parameter("app_id", APP_ID)
-                parameter("app_key", APP_KEY)
-                allergies.forEach { allergy ->
-                    parameter("excluded", allergy)
-                }
-            }.body()
+    private fun excludedParam(allergies: List<String>) =
+        allergies.takeIf { it.isNotEmpty() }?.joinToString(",")
 
-            response.hits?.map { hit ->
-                Recipe(
-                    label = hit.recipe.label,
-                    calories = hit.recipe.calories,
-                    image = hit.recipe.image
-                )
-            } ?: emptyList()
+    suspend fun fetchBreakfast(allergies: List<String>) = fetchByMeal("breakfast", allergies)
+    suspend fun fetchLunch(allergies: List<String>)     = fetchByMeal("lunch",     allergies)
+    suspend fun fetchDinner(allergies: List<String>)    = fetchByMeal("dinner",    allergies)
 
-        } catch (e: Exception) {
-            Log.e("EdamamApi", "Error fetching recipes: ${e.message}", e)
-            emptyList()
+    private suspend fun fetchByMeal(meal: String, allergies: List<String>) = try {
+        withContext(Dispatchers.IO) {
+            val resp = service.getRecipes(
+                query    = meal,
+                appId    = APP_ID,
+                appKey   = APP_KEY,
+                excluded = excludedParam(allergies)
+            )
+            resp.hits.map { it.recipe }
         }
+    } catch (e: Exception) {
+        Log.e("EdamamApi", "Error fetching $meal: ${e.message}", e)
+        emptyList()
     }
-
-    @Serializable
-    data class EdamamResponse(val hits: List<Hit>? = null)
-
-    @Serializable
-    data class Hit(val recipe: RecipeData)
-
-    @Serializable
-    data class RecipeData(
-        val label: String,
-        val calories: Double,
-        val image: String
-    )
 }
