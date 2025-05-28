@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import android.util.Log
+import com.google.firebase.firestore.SetOptions
 
 data class DayMeals(
     val breakfasts: List<Recipe>,
@@ -25,7 +26,7 @@ class MenuViewModel : ViewModel() {
     val weeklyMeals: StateFlow<List<DayMeals>> = _weeklyMeals
 
     private val _currentIndexes = MutableStateFlow(
-        List(7) { listOf(0, 0, 0) } // for each day: [breakfastIndex, lunchIndex, dinnerIndex]
+        List(7) { listOf(0, 0, 0) } // [breakfastIndex, lunchIndex, dinnerIndex] por día
     )
     val currentIndexes: StateFlow<List<List<Int>>> = _currentIndexes
 
@@ -44,7 +45,7 @@ class MenuViewModel : ViewModel() {
             val lunches = EdamamApi.fetchLunch(allergies)
             val dinners = EdamamApi.fetchDinner(allergies)
 
-            val weekMeals = List(7) { dayIndex ->
+            val weekMeals = List(7) {
                 DayMeals(
                     breakfasts = breakfasts.shuffled().take(3),
                     lunches = lunches.shuffled().take(3),
@@ -100,34 +101,22 @@ class MenuViewModel : ViewModel() {
     }
 
     fun saveUserMenu(breakfast: Recipe, lunch: Recipe, dinner: Recipe) {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val user = FirebaseAuth.getInstance().currentUser ?: return
 
-        val menuData = hashMapOf(
-            "breakfast" to mapOf(
-                "label" to breakfast.label,
-                "calories" to breakfast.calories
-            ),
-            "lunch" to mapOf(
-                "label" to lunch.label,
-                "calories" to lunch.calories
-            ),
-            "dinner" to mapOf(
-                "label" to dinner.label,
-                "calories" to dinner.calories
-            ),
-            "timestamp" to System.currentTimeMillis()
+        val data: MutableMap<String, Any> = mutableMapOf(
+            "breakfast" to breakfast.label,
+            "lunch" to lunch.label,
+            "dinner" to dinner.label
         )
 
-
-        firestore.collection("users")
-            .document(uid)
-            .collection("menus")
-            .add(menuData)
+        firestore.collection("menus").document(user.uid)
+            .set(data, SetOptions.merge())
             .addOnSuccessListener {
-                Log.d("MenuViewModel", "Menu guardado correctamente")
+                Log.d("MenuViewModel", "Menú guardado correctamente")
             }
             .addOnFailureListener { e ->
-                Log.e("MenuViewModel", "Error guardando menú", e)
+                Log.e("MenuViewModel", "Error al guardar el menú: ${e.message}")
             }
     }
+
 }
