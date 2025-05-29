@@ -24,18 +24,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.kizunat.Model.User
 import com.example.kizunat.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
-// Define tu modelo User según los datos que usas:
-data class User(
-    val name: String? = null,
-    val height: Double? = null,
-    val weight: Double? = null,
-    val mail: String? = null
-)
+
 
 @Composable
 fun EditProfileScreen(
@@ -66,10 +61,10 @@ fun EditProfileScreen(
 
     LaunchedEffect(user) {
         user?.let {
-            name = it.name.orEmpty()
-            height = it.height?.toInt()?.toString().orEmpty()
-            weight = it.weight?.toInt()?.toString().orEmpty()
-            mail = it.mail.orEmpty()
+            name = it.name ?: ""
+            height = it.height?.toInt()?.toString() ?: ""
+            weight = it.weight?.toInt()?.toString() ?: ""
+            mail = it.mail ?: ""
         }
     }
 
@@ -154,10 +149,10 @@ fun EditProfileScreen(
                         verticalArrangement = Arrangement.spacedBy(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        InfoRow2(value = name) { showEditDialog("Nombre", name) }
-                        InfoRow2(value = height) { showEditDialog("Altura", height) }
-                        InfoRow2(value = weight) { showEditDialog("Peso", weight) }
-                        InfoRow2(value = mail) { showEditDialog("Correo", mail) }
+                        InfoRow2(value = name) { showEditDialog("Nombre", "") }
+                        InfoRow2(value = height) { showEditDialog("Altura", "") }
+                        InfoRow2(value = weight) { showEditDialog("Peso", "") }
+                        InfoRow2(value = mail) { showEditDialog("Correo", "") }
 
                         Button(
                             onClick = {

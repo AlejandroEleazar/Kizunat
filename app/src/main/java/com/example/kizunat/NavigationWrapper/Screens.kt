@@ -6,14 +6,14 @@ import kotlinx.serialization.Serializable
 object Welcome
 
 @Serializable
-data class LoginSignup(val log: Boolean) {
-    companion object
-}
+data class LoginSignup (
+    val log : Boolean
+)
 
 @Serializable
-data class Form(val name: String) {
-    companion object
-}
+data class Form (
+    val name : String
+)
 
 @Serializable
 object Home

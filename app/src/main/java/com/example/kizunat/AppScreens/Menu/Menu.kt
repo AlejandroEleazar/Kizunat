@@ -17,20 +17,34 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.kizunat.AppScreens.CustomScaffold
+import com.example.kizunat.AppScreens.Home.Content
 import com.example.kizunat.R
 import com.example.kizunat.api.Recipe
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun MenuScreen(
     navigateToHome: () -> Unit,
     navigateToMenu: () -> Unit,
-    navigateToProfile: () -> Unit,
+    navigateToProfile: () -> Unit
+) {
+    CustomScaffold(
+        navigateToHome,
+        navigateToMenu,
+        navigateToProfile
+    ) { padding ->
+        ContentMenu(padding)
+    }
+}
+
+@Composable
+fun ContentMenu(
+    padding: PaddingValues,
     viewModel: MenuViewModel = viewModel()
 ) {
     val isLoading by viewModel.isLoading.collectAsState()
@@ -45,118 +59,109 @@ fun MenuScreen(
     LaunchedEffect(Unit) {
         viewModel.loadWeeklyMeals()
     }
+Box(
+    modifier = Modifier.fillMaxSize()
+) {
+    Image(
+        painter = backgroundImage,
+        contentDescription = null,
+        modifier = Modifier.fillMaxSize()
+    )
 
-    CustomScaffold(navigateToHome, navigateToMenu, navigateToProfile) { padding ->
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            shape = RoundedCornerShape(40.dp),
-            color = Color.Transparent
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 220.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        LazyRow(
+            modifier = Modifier.padding(bottom = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Box(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Image(
-                    painter = backgroundImage,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize()
+            itemsIndexed(days) { index, day ->
+                Text(
+                    text = day,
+                    fontSize = 24.sp,
+                    modifier = Modifier
+                        .clickable { selectedDay = index }
+                        .padding(4.dp),
+                    color = if (index == selectedDay)
+                        Color(0xFF4B7043) // verde oscuro para seleccionado
+                    else
+                        Color(0xFF6B8E23), // verde oliva para no seleccionado
+                    style = if (index == selectedDay)
+                        MaterialTheme.typography.titleLarge
+                    else
+                        MaterialTheme.typography.bodyLarge
                 )
+            }
+        }
 
+            ElevatedCard(
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(490.dp),
+                shape = RoundedCornerShape(40.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF))
+            ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.Bottom,
+                        .padding(vertical = 24.dp, horizontal = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    LazyRow(
-                        modifier = Modifier.padding(bottom = 12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        itemsIndexed(days) { index, day ->
-                            Text(
-                                text = day,
-                                fontSize = 24.sp,
-                                modifier = Modifier
-                                    .clickable { selectedDay = index }
-                                    .padding(4.dp),
-                                color = if (index == selectedDay)
-                                    Color(0xFF4B7043) // verde oscuro para seleccionado
-                                else
-                                    Color(0xFF6B8E23), // verde oliva para no seleccionado
-                                style = if (index == selectedDay)
-                                    MaterialTheme.typography.titleLarge
-                                else
-                                    MaterialTheme.typography.bodyLarge
-                            )
-                        }
-                    }
+                    val dayMeals = meals.getOrNull(selectedDay)
+                    val dayIndexes = indexes.getOrNull(selectedDay)
 
-                    Surface(
-                        shape = RoundedCornerShape(40.dp),
-                        color = Color.White,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 24.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .padding(vertical = 24.dp, horizontal = 16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            val dayMeals = meals.getOrNull(selectedDay)
-                            val dayIndexes = indexes.getOrNull(selectedDay)
+                    if (isLoading) {
+                        CircularProgressIndicator()
+                    } else if (dayMeals != null && dayIndexes != null) {
+                        MealSelector(
+                            icon = Icons.Default.LocalCafe,
+                            title = "Breakfast",
+                            options = dayMeals.breakfasts,
+                            selectedIndex = dayIndexes[0]
+                        ) { viewModel.setMeal(selectedDay, "breakfast", it) }
 
-                            if (isLoading) {
-                                CircularProgressIndicator()
-                            } else if (dayMeals != null && dayIndexes != null) {
-                                MealSelector(
-                                    icon = Icons.Default.LocalCafe,
-                                    title = "Breakfast",
-                                    options = dayMeals.breakfasts,
-                                    selectedIndex = dayIndexes[0]
-                                ) { viewModel.setMeal(selectedDay, "breakfast", it) }
+                        MealSelector(
+                            icon = Icons.Default.Fastfood,
+                            title = "Lunch",
+                            options = dayMeals.lunches,
+                            selectedIndex = dayIndexes[1]
+                        ) { viewModel.setMeal(selectedDay, "lunch", it) }
 
-                                MealSelector(
-                                    icon = Icons.Default.Fastfood,
-                                    title = "Lunch",
-                                    options = dayMeals.lunches,
-                                    selectedIndex = dayIndexes[1]
-                                ) { viewModel.setMeal(selectedDay, "lunch", it) }
+                        MealSelector(
+                            icon = Icons.Default.Bedtime,
+                            title = "Dinner",
+                            options = dayMeals.dinners,
+                            selectedIndex = dayIndexes[2]
+                        ) { viewModel.setMeal(selectedDay, "dinner", it) }
 
-                                MealSelector(
-                                    icon = Icons.Default.Bedtime,
-                                    title = "Dinner",
-                                    options = dayMeals.dinners,
-                                    selectedIndex = dayIndexes[2]
-                                ) { viewModel.setMeal(selectedDay, "dinner", it) }
+                        Spacer(modifier = Modifier.height(24.dp))
 
-                                Spacer(modifier = Modifier.height(24.dp))
-
-                                Button(
-                                    onClick = {
-                                        val breakfast = dayMeals.breakfasts.getOrNull(dayIndexes[0])
-                                        val lunch = dayMeals.lunches.getOrNull(dayIndexes[1])
-                                        val dinner = dayMeals.dinners.getOrNull(dayIndexes[2])
-                                        if (breakfast != null && lunch != null && dinner != null) {
-                                            viewModel.saveUserMenu(breakfast, lunch, dinner)
-                                        }
-                                    },
-                                    shape = RoundedCornerShape(40.dp),
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4B7043)),
-                                    modifier = Modifier
-                                        .fillMaxWidth(0.6f)
-                                        .height(48.dp)
-                                ) {
-                                    Text("Save", color = Color.White)
+                        Button(
+                            onClick = {
+                                val breakfast = dayMeals.breakfasts.getOrNull(dayIndexes[0])
+                                val lunch = dayMeals.lunches.getOrNull(dayIndexes[1])
+                                val dinner = dayMeals.dinners.getOrNull(dayIndexes[2])
+                                if (breakfast != null && lunch != null && dinner != null) {
+                                    viewModel.saveUserMenu(breakfast, lunch, dinner)
                                 }
-                            }
+                            },
+                            shape = RoundedCornerShape(40.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4B7043)),
+                            modifier = Modifier
+                                .fillMaxWidth(0.6f)
+                                .height(48.dp)
+                        ) {
+                            Text("Save", color = Color.White)
                         }
                     }
                 }
             }
         }
+
     }
 }
 
