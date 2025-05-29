@@ -34,7 +34,7 @@ import java.util.*
 
 @Composable
 fun FormScreen(
-    navigateToHome: () -> Unit,
+    navigateToMenu: () -> Unit,
     db: FirebaseFirestore,
     name: String,
 ) {
@@ -231,7 +231,7 @@ fun FormScreen(
                 Button(
                     onClick = {
                         saveUser(db, name, dateOfBirth, height, weight, selectedGender, selectedAllergies, selectedActivity)
-                        navigateToHome()
+                        navigateToMenu()
                     },
                     modifier = Modifier
                         .fillMaxWidth()

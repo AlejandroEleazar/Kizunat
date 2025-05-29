@@ -47,7 +47,7 @@ fun NavigationWrapper(auth: FirebaseAuth, db: FirebaseFirestore) {
         composable<Form> { backStackEntry2 ->
             val detail2 = backStackEntry2.toRoute<Form>()
             FormScreen(
-                navigateToHome = {navController.navigate(Home)},
+                navigateToMenu = {navController.navigate(Menu)},
                 db,
                 detail2.name
             )
