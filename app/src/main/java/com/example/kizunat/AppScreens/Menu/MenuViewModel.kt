@@ -3,6 +3,9 @@ package com.example.kizunat.AppScreens.Menu
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.kizunat.Model.Food.Food
+import com.example.kizunat.Model.Menu.Menu
+import com.example.kizunat.R
 import com.example.kizunat.api.EdamamApi
 import com.example.kizunat.api.Recipe
 import com.example.kizunat.repository.AllergyRepository
@@ -133,13 +136,16 @@ class MenuViewModel : ViewModel() {
     }
 
     fun saveUserMenu(breakfast: Recipe, lunch: Recipe, dinner: Recipe) {
+
         val user = FirebaseAuth.getInstance().currentUser ?: return
 
-        val data: MutableMap<String, Any> = mutableMapOf(
-            "breakfast" to breakfast.label,
-            "lunch" to lunch.label,
-            "dinner" to dinner.label
+        val data = Menu(
+                Food(breakfast.label, breakfast.image, breakfast.calories.toInt()),
+                Food(lunch.label, lunch.image, lunch.calories.toInt()),
+                Food(dinner.label, dinner.image, dinner.calories.toInt())
         )
+
+
 
         firestore.collection("menus").document(user.uid)
             .set(data, SetOptions.merge())

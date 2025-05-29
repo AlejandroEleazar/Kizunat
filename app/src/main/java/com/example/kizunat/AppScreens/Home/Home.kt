@@ -56,6 +56,7 @@ import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import coil.compose.AsyncImage
 
 @Composable
 fun HomeScreen(
@@ -75,31 +76,14 @@ fun HomeScreen(
 
 @Composable
 fun Content(padding: PaddingValues, db: FirebaseFirestore) {
-    val currentDate = remember {
-        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
-    }
 
-    val meals = listOf(
-        Meal("Breakfast", "Avocado Toast", R.drawable.bg, 350),
-        Meal("Lunch", "Pasta With Pesto", R.drawable.bg, 760),
-        Meal("Dinner", "Grilled Salmon", R.drawable.bg, 520)
-    )
-
-    val lazyListState = rememberLazyListState()
-    val currentIndex by remember {
-        derivedStateOf {
-            lazyListState.firstVisibleItemIndex
-        }
-    }
-
-    val currentMeal = meals.getOrNull(currentIndex) ?: meals.first()
     var menu by remember { mutableStateOf<Menu?>(null) }
     val uid = FirebaseAuth.getInstance().currentUser?.uid
 
     LaunchedEffect(uid) {
         if (uid != null) {
             try {
-                val snapshot = db.collection("menu").document(uid).get().await()
+                val snapshot = db.collection("menus").document(uid).get().await()
                 menu = snapshot.toObject(Menu::class.java)
                 Log.d("Firestore", "Usuario cargado: $menu")
             } catch (e: Exception) {
@@ -110,6 +94,28 @@ fun Content(padding: PaddingValues, db: FirebaseFirestore) {
         }
     }
 
+    val currentDate = remember {
+        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
+    }
+
+
+
+    val lazyListState = rememberLazyListState()
+    val currentIndex by remember {
+        derivedStateOf {
+            lazyListState.firstVisibleItemIndex
+        }
+    }
+
+
+
+    val meals = listOf(
+        Meal("Breakfast", menu?.breakfast?.name.toString(), menu?.breakfast?.imgUrl.toString(), menu?.breakfast?.cal.toString()),
+        Meal("Lunch", menu?.lunch?.name.toString(), menu?.lunch?.imgUrl.toString(), menu?.lunch?.cal.toString()),
+        Meal("Dinner", menu?.dinner?.name.toString(), menu?.dinner?.imgUrl.toString(), menu?.dinner?.cal.toString())
+    )
+    val totalCalories = meals.sumOf { it.calories.toIntOrNull() ?: 0 }
+    val currentMeal = meals.getOrNull(currentIndex) ?: meals.first()
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -162,10 +168,10 @@ fun Content(padding: PaddingValues, db: FirebaseFirestore) {
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 item {
-                    NutrientCard("Food Calories", "${currentMeal.calories}KCal")
+                    NutrientCard("Food Calories", "${currentMeal.calories}Cal")
                 }
                 item {
-                    NutrientCard("Calories Week", "2200KCal")
+                    NutrientCard("Calories Week", "${totalCalories}Cal")
                 }
             }
 
@@ -191,7 +197,7 @@ fun Content(padding: PaddingValues, db: FirebaseFirestore) {
 }
 
 // Data class para comida
-data class Meal(val type: String, val name: String, val imageRes: Int, val calories: Int)
+data class Meal(val type: String, val name: String, val imageRes: String, val calories: String)
 
 @Composable
 fun MealCard(date: String, meal: Meal) {
@@ -242,10 +248,13 @@ fun MealCard(date: String, meal: Meal) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Image(
-                    painter = painterResource(id = meal.imageRes),
+                AsyncImage(
+                    model = meal.imageRes,
                     contentDescription = null,
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxSize() // o cualquier tamaño que quieras
+                        .clip(RoundedCornerShape(40.dp)) // si necesitas forma
                 )
             }
         }

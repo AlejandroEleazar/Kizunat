@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -86,23 +87,20 @@ Box(
                     modifier = Modifier
                         .clickable { selectedDay = index }
                         .padding(4.dp),
-                    color = if (index == selectedDay)
-                        Color(0xFF4B7043) // verde oscuro para seleccionado
+                    color = Color(0xFF476730),
+                    fontWeight = if (index == selectedDay)
+                        FontWeight.Bold
                     else
-                        Color(0xFF6B8E23), // verde oliva para no seleccionado
-                    style = if (index == selectedDay)
-                        MaterialTheme.typography.titleLarge
-                    else
-                        MaterialTheme.typography.bodyLarge
+                        FontWeight.Normal
                 )
             }
         }
-
+            Spacer(Modifier.height(20.dp))
             ElevatedCard(
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(490.dp),
+                    .width(380.dp)
+                    .height(460.dp),
                 shape = RoundedCornerShape(40.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF))
             ) {
@@ -150,9 +148,9 @@ Box(
                                 }
                             },
                             shape = RoundedCornerShape(40.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4B7043)),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF476730)),
                             modifier = Modifier
-                                .fillMaxWidth(0.6f)
+                                .width(340.dp)
                                 .height(48.dp)
                         ) {
                             Text("Save", color = Color.White)
@@ -181,7 +179,7 @@ fun MealSelector(
             .padding(vertical = 8.dp),
         shape = RoundedCornerShape(40.dp),
         shadowElevation = 6.dp,
-        color = Color(0xFFDDE5DB)
+        color = Color(0xFFEDEFE4)
     ) {
         Column {
             Row(
@@ -192,7 +190,7 @@ fun MealSelector(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = Color(0xFF4B7043),
+                    tint = Color(0xFF476730),
                     modifier = Modifier
                         .size(40.dp)
                         .padding(end = 16.dp)
@@ -202,26 +200,26 @@ fun MealSelector(
                     Text(
                         text = title,
                         style = MaterialTheme.typography.titleMedium,
-                        color = Color(0xFF4B7043)
+                        color = Color(0xFF476730)
                     )
                     val recipe = options.getOrNull(selectedIndex)
                     if (recipe != null) {
                         Text(
                             text = recipe.label,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = Color(0xFF2F4F2F)
+                            color = Color(0xFF476730)
                         )
                         val caloriesRounded = String.format("%.0f", recipe.calories)
                         Text(
                             text = "$caloriesRounded kcal",
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFF2F4F2F)
+                            color = Color(0xFF476730)
                         )
                     } else {
                         Text(
                             text = "No disponible",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = Color(0xFF2F4F2F)
+                            color = Color(0xFF476730)
                         )
                     }
                 }
@@ -229,7 +227,7 @@ fun MealSelector(
                 Icon(
                     imageVector = Icons.Default.KeyboardArrowDown,
                     contentDescription = "Desplegar",
-                    tint = Color(0xFF4B7043),
+                    tint = Color(0xFF476730),
                     modifier = Modifier
                         .size(36.dp)
                         .clickable { expanded = true }

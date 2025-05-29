@@ -1,4 +1,4 @@
-package com.example.kizunat.api
+ package com.example.kizunat.api
 
 import com.squareup.moshi.Json
 
@@ -16,5 +16,6 @@ data class Hit(
 data class Recipe(
     @Json(name = "label") val label: String,
     @Json(name = "calories") val calories: Double,
+    @Json(name = "image") val image: String,
     @Json(name = "ingredientLines") val ingredientLines: List<String>
 )
