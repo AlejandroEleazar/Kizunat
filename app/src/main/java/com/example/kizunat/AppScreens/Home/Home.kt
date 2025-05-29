@@ -1,5 +1,6 @@
 package com.example.kizunat.AppScreens.Home
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -31,6 +32,7 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,13 +48,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kizunat.AppScreens.CustomScaffold
+import com.example.kizunat.Model.Menu.Menu
 import com.example.kizunat.R
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import coil.compose.AsyncImage
 
 @Composable
 fun HomeScreen(
+    db: FirebaseFirestore,
     navigateToHome: () -> Unit,
     navigateToMenu: () -> Unit,
     navigateToProfile: () -> Unit
@@ -62,21 +70,35 @@ fun HomeScreen(
         navigateToMenu,
         navigateToProfile
     ) { padding ->
-        Content(padding)
+        Content(padding, db)
     }
 }
 
 @Composable
-fun Content(padding: PaddingValues) {
+fun Content(padding: PaddingValues, db: FirebaseFirestore) {
+
+    var menu by remember { mutableStateOf<Menu?>(null) }
+    val uid = FirebaseAuth.getInstance().currentUser?.uid
+
+    LaunchedEffect(uid) {
+        if (uid != null) {
+            try {
+                val snapshot = db.collection("menus").document(uid).get().await()
+                menu = snapshot.toObject(Menu::class.java)
+                Log.d("Firestore", "Usuario cargado: $menu")
+            } catch (e: Exception) {
+                Log.e("Firestore", "Error al obtener el usuario", e)
+            }
+        } else {
+            Log.e("Auth", "Usuario no autenticado")
+        }
+    }
+
     val currentDate = remember {
         SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
     }
 
-    val meals = listOf(
-        Meal("Breakfast", "Avocado Toast", R.drawable.bg, 350),
-        Meal("Lunch", "Pasta With Pesto", R.drawable.bg, 760),
-        Meal("Dinner", "Grilled Salmon", R.drawable.bg, 520)
-    )
+
 
     val lazyListState = rememberLazyListState()
     val currentIndex by remember {
@@ -85,8 +107,15 @@ fun Content(padding: PaddingValues) {
         }
     }
 
-    val currentMeal = meals.getOrNull(currentIndex) ?: meals.first()
 
+
+    val meals = listOf(
+        Meal("Breakfast", menu?.breakfast?.name.toString(), menu?.breakfast?.imgUrl.toString(), menu?.breakfast?.cal.toString()),
+        Meal("Lunch", menu?.lunch?.name.toString(), menu?.lunch?.imgUrl.toString(), menu?.lunch?.cal.toString()),
+        Meal("Dinner", menu?.dinner?.name.toString(), menu?.dinner?.imgUrl.toString(), menu?.dinner?.cal.toString())
+    )
+    val totalCalories = meals.sumOf { it.calories.toIntOrNull() ?: 0 }
+    val currentMeal = meals.getOrNull(currentIndex) ?: meals.first()
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -109,7 +138,6 @@ fun Content(padding: PaddingValues) {
         ){
             Spacer(modifier = Modifier.height(70.dp))
 
-            // LazyRow de comidas (desayuno, comida, cena)
             LazyRow(
                 state = lazyListState,
                 contentPadding = PaddingValues(horizontal = 16.dp),
@@ -121,7 +149,6 @@ fun Content(padding: PaddingValues) {
             }
             Spacer(modifier = Modifier.height(33.dp))
 
-            // Nutritional Summary
             Text(
                 text = "Nutritional Summary",
                 modifier = Modifier
@@ -139,16 +166,15 @@ fun Content(padding: PaddingValues) {
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 item {
-                    NutrientCard("Food Calories", "${currentMeal.calories}KCal")
+                    NutrientCard("Food Calories", "${currentMeal.calories}Cal")
                 }
                 item {
-                    NutrientCard("Calories Week", "2200KCal")
+                    NutrientCard("Calories Week", "${totalCalories}Cal")
                 }
             }
 
             Spacer(modifier = Modifier.height(23.dp))
 
-            // Mood
             Text(
                 text = "Mood",
                 modifier = Modifier
@@ -167,8 +193,7 @@ fun Content(padding: PaddingValues) {
     }
 }
 
-// Data class para comida
-data class Meal(val type: String, val name: String, val imageRes: Int, val calories: Int)
+data class Meal(val type: String, val name: String, val imageRes: String, val calories: String)
 
 @Composable
 fun MealCard(date: String, meal: Meal) {
@@ -204,7 +229,7 @@ fun MealCard(date: String, meal: Meal) {
                 Spacer(Modifier.height(20.dp))
 
                 Text(
-                    "${meal.name}",
+                    meal.name,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     color = Color(0xFF476730),
@@ -219,10 +244,13 @@ fun MealCard(date: String, meal: Meal) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Image(
-                    painter = painterResource(id = meal.imageRes),
+                AsyncImage(
+                    model = meal.imageRes,
                     contentDescription = null,
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxSize() // o cualquier tamaño que quieras
+                        .clip(RoundedCornerShape(40.dp)) // si necesitas forma
                 )
             }
         }

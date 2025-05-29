@@ -1,41 +1,19 @@
 package com.example.kizunat.AppScreens.Profile
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -46,18 +24,49 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.kizunat.Model.User
 import com.example.kizunat.R
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
+
 
 
 @Composable
 fun EditProfileScreen(
-    navigateBack: () -> Boolean
+    db: FirebaseFirestore,
+    navigateBack: () -> Unit
 ) {
-    // Estados editables
-    var name by remember { mutableStateOf(/*initialName*/ "hola") }
-    var height by remember { mutableStateOf(/*initialHeight*/ "180") }
-    var weight by remember { mutableStateOf(/*initialWeight*/ "79") }
-    var mail by remember { mutableStateOf(/*initialMail*/ "ejemplo@gmail.com") }
+    var user by remember { mutableStateOf<User?>(null) }
+    val uid = FirebaseAuth.getInstance().currentUser?.uid
+
+    var name by remember { mutableStateOf("") }
+    var height by remember { mutableStateOf("") }
+    var weight by remember { mutableStateOf("") }
+    var mail by remember { mutableStateOf("") }
+
+    LaunchedEffect(uid) {
+        if (uid != null) {
+            try {
+                val snapshot = db.collection("users").document(uid).get().await()
+                user = snapshot.toObject(User::class.java)
+                Log.d("Firestore", "Usuario cargado: $user")
+            } catch (e: Exception) {
+                Log.e("Firestore", "Error al obtener el usuario", e)
+            }
+        } else {
+            Log.e("Auth", "Usuario no autenticado")
+        }
+    }
+
+    LaunchedEffect(user) {
+        user?.let {
+            name = it.name ?: ""
+            height = it.height?.toInt()?.toString() ?: ""
+            weight = it.weight?.toInt()?.toString() ?: ""
+            mail = it.mail ?: ""
+        }
+    }
 
     var editingField by remember { mutableStateOf<String?>(null) }
     var editedValue by rememberSaveable { mutableStateOf("") }
@@ -116,7 +125,7 @@ fun EditProfileScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 120.dp),
+                .padding(top = 140.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(155.dp))
@@ -129,26 +138,42 @@ fun EditProfileScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(490.dp),
+                        .height(520.dp),
                     shape = RoundedCornerShape(40.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
                     Column(
                         modifier = Modifier
-                            .padding(top = 80.dp, start = 16.dp, end = 16.dp, bottom = 32.dp)
+                            .padding(top = 120.dp, start = 16.dp, end = 16.dp, bottom = 32.dp)
                             .fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(24.dp)
+                        verticalArrangement = Arrangement.spacedBy(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Spacer(Modifier.height(10.dp))
-
-                        InfoRow2(value = name) { showEditDialog("Nombre", name) }
-                        InfoRow2(value = height) { showEditDialog("Altura", height) }
-                        InfoRow2(value = weight) { showEditDialog("Peso", weight) }
-                        InfoRow2(value = mail) { showEditDialog("Correo", mail) }
+                        InfoRow2(value = name) { showEditDialog("Nombre", "") }
+                        InfoRow2(value = height) { showEditDialog("Altura", "") }
+                        InfoRow2(value = weight) { showEditDialog("Peso", "") }
+                        InfoRow2(value = mail) { showEditDialog("Correo", "") }
 
                         Button(
                             onClick = {
-                               navigateBack()
+                                uid?.let {
+                                    val userRef = db.collection("users").document(it)
+
+                                    val updates = mutableMapOf<String, Any>()
+                                    if (name.isNotBlank()) updates["name"] = name
+                                    height.toIntOrNull()?.let { h -> updates["height"] = h }
+                                    weight.toIntOrNull()?.let { w -> updates["weight"] = w }
+                                    if (mail.isNotBlank()) updates["mail"] = mail
+
+                                    userRef.update(updates)
+                                        .addOnSuccessListener {
+                                            Log.d("Firestore", "Campos actualizados correctamente")
+                                            navigateBack()
+                                        }
+                                        .addOnFailureListener { e ->
+                                            Log.e("Firestore", "Error al actualizar campos", e)
+                                        }
+                                }
                             },
                             modifier = Modifier.size(308.dp, 50.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF476730))
@@ -182,8 +207,9 @@ fun EditProfileScreen(
         }
     }
 }
+
 @Composable
-fun InfoRow2(value: String, onClick: () -> Unit) {
+fun InfoRow2(value: String?, onClick: () -> Unit) {
     val interactionSource = remember { MutableInteractionSource() }
     ElevatedCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
@@ -201,7 +227,7 @@ fun InfoRow2(value: String, onClick: () -> Unit) {
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             Text(
-                text = value,
+                text = value ?: "No disponible",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color(0xFF2C3E22)
@@ -215,5 +241,3 @@ fun InfoRow2(value: String, onClick: () -> Unit) {
         }
     }
 }
-
-

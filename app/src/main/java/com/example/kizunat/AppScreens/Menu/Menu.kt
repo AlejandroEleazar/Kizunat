@@ -1,7 +1,6 @@
 package com.example.kizunat.AppScreens.Menu
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -10,21 +9,24 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material.icons.filled.Fastfood
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.LocalCafe
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.kizunat.AppScreens.CustomScaffold
+import com.example.kizunat.AppScreens.Home.Content
 import com.example.kizunat.R
+import com.example.kizunat.api.Recipe
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun MenuScreen(
@@ -37,133 +39,214 @@ fun MenuScreen(
         navigateToMenu,
         navigateToProfile
     ) { padding ->
-        MenuContent(padding)
+        ContentMenu(padding)
     }
 }
 
 @Composable
-fun MenuContent(padding: PaddingValues) {
+fun ContentMenu(
+    padding: PaddingValues,
+    viewModel: MenuViewModel = viewModel()
+) {
+    val isLoading by viewModel.isLoading.collectAsState()
+    val meals by viewModel.weeklyMeals.collectAsState()
+    val indexes by viewModel.currentIndexes.collectAsState()
+
     var selectedDay by remember { mutableStateOf(0) }
-    val days = listOf(
-        "Monday", "Tuesday", "Wednesday",
-        "Thursday", "Friday", "Saturday", "Sunday"
+    val days = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+
+    val backgroundImage = painterResource(id = R.drawable.bg_3)
+
+    LaunchedEffect(Unit) {
+        viewModel.loadWeeklyMeals()
+    }
+Box(
+    modifier = Modifier.fillMaxSize()
+) {
+    Image(
+        painter = backgroundImage,
+        contentDescription = null,
+        modifier = Modifier.fillMaxSize()
     )
 
-    val mealsPerDay = listOf(
-        Triple("Pancakes", "Chicken Salad", "Pasta"),
-        Triple("Smoothie Bowl", "Burrito Bowl", "Sushi"),
-        Triple("Toast & Eggs", "Veggie Wrap", "Steak"),
-        Triple("Yogurt Parfait", "Rice & Beans", "Pizza"),
-        Triple("Fruit Mix", "Grilled Chicken", "Curry"),
-        Triple("Waffles", "Tofu Stir Fry", "Burger"),
-        Triple("Bagel & Cream Cheese", "Poke Bowl", "Lasagna")
-    )
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        Image(
-            painter = painterResource(id = R.drawable.bg_3),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 240.dp, bottom = 64.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 220.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        LazyRow(
+            modifier = Modifier.padding(bottom = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(24.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-            ) {
-                itemsIndexed(days) { index, day ->
-                    Text(
-                        text = day,
-                        fontSize = 22.sp,
-                        fontWeight = if (index == selectedDay) FontWeight.Bold else FontWeight.Medium,
-                        color = if (index == selectedDay) Color(0xFF38521E) else Color(0xFF6E6E6E),
-                        modifier = Modifier
-                            .clickable { selectedDay = index }
-                            .padding(vertical = 8.dp)
-                    )
-                }
+            itemsIndexed(days) { index, day ->
+                Text(
+                    text = day,
+                    fontSize = 24.sp,
+                    modifier = Modifier
+                        .clickable { selectedDay = index }
+                        .padding(4.dp),
+                    color = Color(0xFF476730),
+                    fontWeight = if (index == selectedDay)
+                        FontWeight.Bold
+                    else
+                        FontWeight.Normal
+                )
             }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
+        }
+            Spacer(Modifier.height(20.dp))
             ElevatedCard(
-                shape = RoundedCornerShape(48.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 modifier = Modifier
-                    .fillMaxWidth(0.8f)
-                    .shadow(elevation = 12.dp, shape = RoundedCornerShape(48.dp))
+                    .width(380.dp)
+                    .height(460.dp),
+                shape = RoundedCornerShape(40.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF))
             ) {
                 Column(
                     modifier = Modifier
-                        .padding(top = 24.dp, bottom = 16.dp)
-                        .fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(24.dp),
+                        .padding(vertical = 24.dp, horizontal = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    val (breakfast, lunch, dinner) = mealsPerDay[selectedDay]
-                    MealRow(Icons.Default.LocalCafe, "Breakfast", breakfast, Color(0xFFEDEFE4))
-                    MealRow(Icons.Default.Fastfood, "Lunch", lunch, Color(0xFFEDEFE4))
-                    MealRow(Icons.Default.Bedtime, "Dinner", dinner, Color(0xFFEDEFE4))
+                    val dayMeals = meals.getOrNull(selectedDay)
+                    val dayIndexes = indexes.getOrNull(selectedDay)
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    if (isLoading) {
+                        CircularProgressIndicator()
+                    } else if (dayMeals != null && dayIndexes != null) {
+                        MealSelector(
+                            icon = Icons.Default.LocalCafe,
+                            title = "Breakfast",
+                            options = dayMeals.breakfasts,
+                            selectedIndex = dayIndexes[0]
+                        ) { viewModel.setMeal(selectedDay, "breakfast", it) }
 
-                    Button(
-                        onClick = { /**/ },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF476730)),
-                        modifier = Modifier
-                            .height(48.dp)
-                            .width(200.dp),
-                        shape = RoundedCornerShape(24.dp)
-                    ) {
-                        Text(
-                            text = "Save",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color.White
-                        )
+                        MealSelector(
+                            icon = Icons.Default.Fastfood,
+                            title = "Lunch",
+                            options = dayMeals.lunches,
+                            selectedIndex = dayIndexes[1]
+                        ) { viewModel.setMeal(selectedDay, "lunch", it) }
+
+                        MealSelector(
+                            icon = Icons.Default.Bedtime,
+                            title = "Dinner",
+                            options = dayMeals.dinners,
+                            selectedIndex = dayIndexes[2]
+                        ) { viewModel.setMeal(selectedDay, "dinner", it) }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        Button(
+                            onClick = {
+                                val breakfast = dayMeals.breakfasts.getOrNull(dayIndexes[0])
+                                val lunch = dayMeals.lunches.getOrNull(dayIndexes[1])
+                                val dinner = dayMeals.dinners.getOrNull(dayIndexes[2])
+                                if (breakfast != null && lunch != null && dinner != null) {
+                                    viewModel.saveUserMenu(breakfast, lunch, dinner)
+                                }
+                            },
+                            shape = RoundedCornerShape(40.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF476730)),
+                            modifier = Modifier
+                                .width(340.dp)
+                                .height(48.dp)
+                        ) {
+                            Text("Save", color = Color.White)
+                        }
                     }
                 }
             }
         }
+
     }
 }
 
 @Composable
-private fun MealRow(icon: ImageVector, label: String, foodName: String, backgroundColor: Color) {
-    Box(
+fun MealSelector(
+    icon: ImageVector,
+    title: String,
+    options: List<Recipe>,
+    selectedIndex: Int,
+    onSelected: (Int) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Surface(
         modifier = Modifier
-            .fillMaxWidth(0.8f)
-            .shadow(elevation = 12.dp, shape = RoundedCornerShape(36.dp))
-            .background(color = backgroundColor, shape = RoundedCornerShape(36.dp))
-            .padding(horizontal = 20.dp, vertical = 16.dp)
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        shape = RoundedCornerShape(40.dp),
+        shadowElevation = 6.dp,
+        color = Color(0xFFEDEFE4)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                modifier = Modifier.size(40.dp),
-                tint = Color(0xFF476730)
-            )
-            Spacer(modifier = Modifier.width(20.dp))
-            Column {
-                Text(
-                    text = label,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color(0xFF476730)
+        Column {
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = Color(0xFF476730),
+                    modifier = Modifier
+                        .size(40.dp)
+                        .padding(end = 16.dp)
                 )
-                Text(
-                    text = foodName,
-                    fontSize = 16.sp,
-                    color = Color.Gray
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color(0xFF476730)
+                    )
+                    val recipe = options.getOrNull(selectedIndex)
+                    if (recipe != null) {
+                        Text(
+                            text = recipe.label,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color(0xFF476730)
+                        )
+                        val caloriesRounded = String.format("%.0f", recipe.calories)
+                        Text(
+                            text = "$caloriesRounded kcal",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color(0xFF476730)
+                        )
+                    } else {
+                        Text(
+                            text = "No disponible",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color(0xFF476730)
+                        )
+                    }
+                }
+
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowDown,
+                    contentDescription = "Desplegar",
+                    tint = Color(0xFF476730),
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clickable { expanded = true }
                 )
+            }
+
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                options.forEachIndexed { index, recipe ->
+                    DropdownMenuItem(
+                        text = { Text(recipe.label) },
+                        onClick = {
+                            onSelected(index)
+                            expanded = false
+                        }
+                    )
+                }
             }
         }
     }

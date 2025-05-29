@@ -22,8 +22,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -53,7 +53,7 @@ import com.google.firebase.auth.FirebaseAuth
 fun AuthScreen(
     auth: FirebaseAuth,
     navigateToHome: () -> Unit,
-    navigateToForm: () -> Unit,
+    navigateToForm: (String) -> Unit,
     log: Boolean
 ) {
     var check by remember { mutableStateOf(log) }
@@ -78,7 +78,6 @@ fun AuthScreen(
             .fillMaxSize()
             .background(color = Color(0xFFF9FAEF))
     ) {
-        // Fondo con imagen
         Image(
             painter = painterResource(id = R.drawable.bg_2),
             contentDescription = null,
@@ -86,7 +85,6 @@ fun AuthScreen(
             modifier = Modifier.fillMaxSize()
         )
 
-        // Contenido principal
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -136,21 +134,21 @@ fun AuthScreen(
                         onClick = {
                             if (check) {
                                 auth.signInWithEmailAndPassword(mail, password).addOnCompleteListener { task ->
-                                    if (task.isSuccessful){
+                                    if (task.isSuccessful && auth.currentUser != null) {
                                         navigateToHome()
                                     }
                                     else{
-                                        Log.d("Error", "ERROR")
+                                        Log.d("Error", "ERROR al hacer Log In")
                                     }
                                 }
 
                             }else{
                                 auth.createUserWithEmailAndPassword(mail, password).addOnCompleteListener{ task ->
-                                    if (task.isSuccessful){
-                                        navigateToForm()
+                                    if (task.isSuccessful && auth.currentUser != null) {
+                                        navigateToForm(name)
                                     }
                                     else{
-                                        Log.d("Error", "ERROR")
+                                        Log.d("Error", "ERROR al hacer Sign Up")
                                     }
                                 }
 
@@ -260,7 +258,7 @@ private fun FormInputRow(
             TextField(
                 value = value,
                 onValueChange = onValueChange,
-                modifier = Modifier.width(223.dp),
+                modifier = Modifier.width(215.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.Transparent,
@@ -270,7 +268,7 @@ private fun FormInputRow(
                 )
             )
         }
-        Divider(
+        HorizontalDivider(
             color = Color.LightGray,
             thickness = 1.dp,
             modifier = Modifier.padding(top = 6.dp)
@@ -303,7 +301,7 @@ private fun PasswordInputRow(
             TextField(
                 value = value,
                 onValueChange = onValueChange,
-                modifier = Modifier.width(223.dp),
+                modifier = Modifier.width(215.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
@@ -323,11 +321,10 @@ private fun PasswordInputRow(
             )
         }
 
-        Divider(
+        HorizontalDivider(
             color = Color.LightGray,
             thickness = 1.dp,
             modifier = Modifier.padding(top = 6.dp)
         )
     }
 }
-

@@ -1,5 +1,6 @@
 package com.example.kizunat.AppScreens.LogIn
 
+import android.util.Log
 import android.widget.DatePicker
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -7,7 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,13 +23,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.kizunat.Model.User
 import com.example.kizunat.R
+
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import java.util.*
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
-fun FormScreen(onNextClick: () -> Unit = {}, navigateToHome: () -> Unit) {
+fun FormScreen(
+    navigateToMenu: () -> Unit,
+    db: FirebaseFirestore,
+    name: String,
+) {
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
 
@@ -36,7 +45,7 @@ fun FormScreen(onNextClick: () -> Unit = {}, navigateToHome: () -> Unit) {
     var height by remember { mutableStateOf("") }
     var weight by remember { mutableStateOf("") }
     var selectedGender by remember { mutableStateOf("") }
-    var selectedAllergies by remember { mutableStateOf(setOf<String>()) }
+    var selectedAllergies by remember { mutableStateOf(listOf<String>()) }
     var selectedActivity by remember { mutableStateOf("") }
 
     var showGenderDialog by remember { mutableStateOf(false) }
@@ -89,7 +98,7 @@ fun FormScreen(onNextClick: () -> Unit = {}, navigateToHome: () -> Unit) {
                 Spacer(Modifier.height(32.dp))
 
                 // Date of Birth - se muestra normalmente el valor
-                FormFieldRow("Date of Birth", dateOfBirth, onClick = { datePicker.show() }) {
+                FormFieldRow("Date of Birth", dateOfBirth, onClick = { datePicker.show()  }) {
                     Icon(Icons.Default.DateRange, contentDescription = null, tint = Color.Gray)
                 }
                 Spacer(Modifier.height(24.dp))
@@ -97,6 +106,8 @@ fun FormScreen(onNextClick: () -> Unit = {}, navigateToHome: () -> Unit) {
                 // Gender - se muestra vacío aunque tenga seleccionado (valor guardado)
                 FormOptionRow("Gender", "") { showGenderDialog = true }
                 Spacer(Modifier.height(24.dp))
+
+                Log.i("Date", dateOfBirth)
 
                 // Height input
                 Column(modifier = Modifier.fillMaxWidth()) {
@@ -134,7 +145,7 @@ fun FormScreen(onNextClick: () -> Unit = {}, navigateToHome: () -> Unit) {
                             colors = OutlinedTextFieldDefaults.colors()
                         )
                     }
-                    Divider(
+                    HorizontalDivider(
                         color = Color.LightGray,
                         thickness = 1.dp,
                         modifier = Modifier.padding(top = 6.dp)
@@ -187,7 +198,7 @@ fun FormScreen(onNextClick: () -> Unit = {}, navigateToHome: () -> Unit) {
                             colors = OutlinedTextFieldDefaults.colors()
                         )
                     }
-                    Divider(
+                    HorizontalDivider(
                         color = Color.LightGray,
                         thickness = 1.dp,
                         modifier = Modifier.padding(top = 6.dp)
@@ -218,7 +229,10 @@ fun FormScreen(onNextClick: () -> Unit = {}, navigateToHome: () -> Unit) {
                 Spacer(Modifier.height(40.dp))
 
                 Button(
-                    onClick = { navigateToHome()},
+                    onClick = {
+                        saveUser(db, name, dateOfBirth, height, weight, selectedGender, selectedAllergies, selectedActivity)
+                        navigateToMenu()
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
@@ -230,7 +244,6 @@ fun FormScreen(onNextClick: () -> Unit = {}, navigateToHome: () -> Unit) {
             }
         }
 
-        // Diálogos para seleccionar opciones guardando normalmente
 
         if (showGenderDialog) {
             SimpleDialog(
@@ -273,7 +286,6 @@ fun FormScreen(onNextClick: () -> Unit = {}, navigateToHome: () -> Unit) {
     }
 }
 
-// El resto de composables queda igual:
 
 @Composable
 private fun FormFieldRow(
@@ -294,7 +306,7 @@ private fun FormFieldRow(
             Spacer(Modifier.width(12.dp))
             trailingIcon()
         }
-        Divider(color = Color.LightGray, thickness = 1.dp, modifier = Modifier.padding(top = 6.dp))
+        HorizontalDivider(color = Color.LightGray, thickness = 1.dp, modifier = Modifier.padding(top = 6.dp))
     }
 }
 
@@ -306,7 +318,7 @@ private fun FormOptionRow(
 ) {
     FormFieldRow(label, value, onClick) {
         Icon(
-            imageVector = Icons.Default.ArrowForwardIos,
+            imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
             contentDescription = null,
             tint = Color.Gray,
             modifier = Modifier.size(18.dp)
@@ -375,11 +387,12 @@ private fun SimpleDialog(
 private fun MultiSelectDialog(
     title: String,
     options: List<String>,
-    selected: Set<String>,
+    selected: List<String>,
     onDismiss: () -> Unit,
-    onSelect: (Set<String>) -> Unit
+    onSelect: (List<String>) -> Unit
 ) {
-    var temp by remember { mutableStateOf(selected) }
+    var temp by remember { mutableStateOf(selected.toSet()) } // Internamente usar Set para lógica
+
     Dialog(onDismissRequest = onDismiss) {
         ElevatedCard(
             modifier = Modifier
@@ -415,7 +428,7 @@ private fun MultiSelectDialog(
                 }
                 Spacer(Modifier.height(24.dp))
                 Button(
-                    onClick = { onSelect(temp) },
+                    onClick = { onSelect(temp.toList()) }, // Convertir Set a List aquí
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF476730),
@@ -426,5 +439,44 @@ private fun MultiSelectDialog(
                 }
             }
         }
+    }
+}
+
+
+
+fun saveUser(
+    db: FirebaseFirestore,
+    name: String,
+    dateOfBirth: String,
+    height: String,
+    weight: String,
+    selectedGender: String,
+    selectedAllergies: List<String>,
+    selectedActivity: String,
+) {
+
+    val user = FirebaseAuth.getInstance().currentUser
+    val uid = user?.uid
+
+    uid?.let {
+        val userData = User(
+            name = name,
+            dateOfBirth = dateOfBirth,
+            gender = selectedGender,
+            height = height.toInt(),
+            weight = weight.toInt(),
+            allergies = selectedAllergies,
+            activityLevel = selectedActivity,
+            mail = user.email
+        )
+        Log.i("ID", it)
+        db.collection("users").document(it).set(userData)
+
+            .addOnSuccessListener {
+                Log.i("Kizunat", "Success")
+            }
+            .addOnFailureListener {
+                Log.i("Kizunat", "Failure: ${it.message}")
+            }
     }
 }
