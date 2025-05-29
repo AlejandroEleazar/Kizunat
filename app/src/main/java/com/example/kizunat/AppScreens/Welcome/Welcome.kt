@@ -61,7 +61,6 @@ fun welcome(navigateToLogIn: ( Boolean) -> Unit) {
                     text = "Log In",
                     style = TextStyle(
                         fontSize = 18.sp,
-                        //fontFamily = FontFamily(Font(R.font.nunito)),
                         fontWeight = FontWeight(700),
                         color = Color(0xFFFFFFFF)
 
@@ -78,7 +77,6 @@ fun welcome(navigateToLogIn: ( Boolean) -> Unit) {
                     text = "Dont have an account?",
                     style = TextStyle(
                         fontSize = 18.sp,
-                        //fontFamily = FontFamily(Font(R.font.nunito)),
                         fontWeight = FontWeight(400),
                         color = Color(0xFFC8EEA8),
                     ),
@@ -90,7 +88,6 @@ fun welcome(navigateToLogIn: ( Boolean) -> Unit) {
                     text = "Sign In",
                     style = TextStyle(
                         fontSize = 18.sp,
-                        //fontFamily = FontFamily(Font(R.font.nunito)),
                         fontWeight = FontWeight(400),
                         color = Color(0xFF894A67),
                         textDecoration = TextDecoration.Underline

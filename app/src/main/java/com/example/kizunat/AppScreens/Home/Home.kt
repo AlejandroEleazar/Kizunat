@@ -138,7 +138,6 @@ fun Content(padding: PaddingValues, db: FirebaseFirestore) {
         ){
             Spacer(modifier = Modifier.height(70.dp))
 
-            // LazyRow de comidas (desayuno, comida, cena)
             LazyRow(
                 state = lazyListState,
                 contentPadding = PaddingValues(horizontal = 16.dp),
@@ -150,7 +149,6 @@ fun Content(padding: PaddingValues, db: FirebaseFirestore) {
             }
             Spacer(modifier = Modifier.height(33.dp))
 
-            // Nutritional Summary
             Text(
                 text = "Nutritional Summary",
                 modifier = Modifier
@@ -177,7 +175,6 @@ fun Content(padding: PaddingValues, db: FirebaseFirestore) {
 
             Spacer(modifier = Modifier.height(23.dp))
 
-            // Mood
             Text(
                 text = "Mood",
                 modifier = Modifier
@@ -196,7 +193,6 @@ fun Content(padding: PaddingValues, db: FirebaseFirestore) {
     }
 }
 
-// Data class para comida
 data class Meal(val type: String, val name: String, val imageRes: String, val calories: String)
 
 @Composable

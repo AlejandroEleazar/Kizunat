@@ -244,7 +244,6 @@ fun FormScreen(
             }
         }
 
-        // Diálogos para seleccionar opciones guardando normalmente
 
         if (showGenderDialog) {
             SimpleDialog(
@@ -287,7 +286,6 @@ fun FormScreen(
     }
 }
 
-// El resto de composables queda igual:
 
 @Composable
 private fun FormFieldRow(

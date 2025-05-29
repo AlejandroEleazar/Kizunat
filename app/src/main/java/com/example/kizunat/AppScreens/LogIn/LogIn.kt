@@ -78,7 +78,6 @@ fun AuthScreen(
             .fillMaxSize()
             .background(color = Color(0xFFF9FAEF))
     ) {
-        // Fondo con imagen
         Image(
             painter = painterResource(id = R.drawable.bg_2),
             contentDescription = null,
@@ -86,7 +85,6 @@ fun AuthScreen(
             modifier = Modifier.fillMaxSize()
         )
 
-        // Contenido principal
         Column(
             modifier = Modifier
                 .fillMaxSize()

@@ -140,7 +140,6 @@ fun ProfileContent(
                     }
                 }
 
-                // Círculo con icono persona
                 ElevatedCard(
                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
                     shape = CircleShape,
@@ -162,7 +161,6 @@ fun ProfileContent(
                     }
                 }
 
-                // Botón editar
                 ElevatedCard(
                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
                     shape = CircleShape,
