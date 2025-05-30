@@ -69,7 +69,7 @@ You can try Kizunat by downloading and installing the APK on your Android device
 
   <!-- QR Code personalizado -->
   <img 
-    src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://example.com/kizunat.apk&color=6BBF59&bgcolor=ffffff&ecc=M" 
+    src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://github.com/AlejandroEleazar/Kizunat/releases/download/v1.0.0/app-debug.apk&color=6BBF59&bgcolor=ffffff&ecc=M" 
     alt="QR Code to download Kizunat APK"
     style="margin-bottom: 12px; border-radius: 12px; box-shadow: 0 0 8px rgba(107,191,89,0.5);"
   />
@@ -77,7 +77,7 @@ You can try Kizunat by downloading and installing the APK on your Android device
   <!-- Botón debajo del QR -->
   <br/>
 
-  [![⬇️ Download APK](https://img.shields.io/badge/⬇️%20Download%20APK-Kizunat-6BBF59?style=for-the-badge&logo=android&logoColor=white)](https://example.com/kizunat.apk)
+  [![⬇️ Download APK](https://img.shields.io/badge/⬇️%20Download%20APK-Kizunat-6BBF59?style=for-the-badge&logo=android&logoColor=white)](https://github.com/AlejandroEleazar/Kizunat/releases/download/v1.0.0/app-debug.apk)
 
 </div>
 
