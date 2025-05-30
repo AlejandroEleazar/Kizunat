@@ -160,6 +160,19 @@ See the full [LICENSE](./LICENSE) file for details.
 
 ---
 
+## Feedback & Support
+
+We welcome your feedback to improve **Kizunat**!
+
+- 💬 Have suggestions or ideas? Feel free to [open a new issue](https://github.com/AlejandroEleazar/Kizunat/issues/new).
+- 🐛 Found a bug? Please report it by creating an [issue here](https://github.com/AlejandroEleazar/Kizunat/issues).
+- 🙌 Want to contribute? Check out our [contribution guidelines](./CONTRIBUTING.md).
+- 📧 For personal questions or inquiries, contact us via GitHub or start a [discussion](https://github.com/AlejandroEleazar/Kizunat/discussions).
+
+>  You help us grow by reporting issues and sharing ideas 💡
+>  Thank you for supporting the Kizunat project!
+
+---
 ## ✅ Conclusion
 
 We believe that health starts with habits.  
