@@ -156,7 +156,9 @@ git clone https://github.com/AlejandroEleazar/Kizunat.git
 
 ## 📄 License
 
-This project is licensed for personal use only. Commercial use, modification, or redistribution are strictly prohibited.  
+This project is covered by a **custom Personal Use License with Limited Collaborative Rights**.  
+Commercial use, redistribution, and publishing of modified versions are strictly prohibited.  
+Violations of this license may result in legal action. 
 See the full [LICENSE](./LICENSE) file for details.
 
 ---
