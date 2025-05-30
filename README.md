@@ -34,6 +34,7 @@
 - [🛠️ Technologies Used](#️-technologies-used)
 - [👨‍💻 Core Developers](#-core-developers)
 - [📄 License](#-license)
+- [💬 Feedback & Support](#-feedback--support)
 - [✅ Conclusion](#-conclusion)
 
 ---
@@ -160,7 +161,7 @@ See the full [LICENSE](./LICENSE) file for details.
 
 ---
 
-## Feedback & Support
+## 💬 Feedback & Support
 
 We welcome your feedback to improve **Kizunat**!
 
