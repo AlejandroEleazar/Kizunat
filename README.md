@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/Platform-Android%20Only-blue?style=for-the-badge&logo=google"/>
   <img src="https://img.shields.io/badge/Edamam%20API-00C851?style=for-the-badge&logo=leaflet&logoColor=white"/>
   <img src="https://img.shields.io/badge/Kizunat-Salud%20y%20Nutrici%C3%B3n-6BBF59?style=for-the-badge&logo=leaflet&logoColor=white"/>
-  <img src="https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/License-Personal%20Use%20Only-red.svg?style=for-the-badge"/>
   <img src="https://img.shields.io/badge/Status-Active-success?style=for-the-badge"/>
   <img src="https://img.shields.io/github/stars/AlejandroEleazar/Kizunat?style=for-the-badge&logo=github"/>
 
@@ -83,7 +83,8 @@
 
 ## 📄 License
 
-This project is licensed under the MIT License. See [LICENSE](./LICENSE) for details.
+This project is licensed for personal use only. Commercial use, modification, or redistribution are strictly prohibited.  
+See the full [LICENSE](./LICENSE) file for details.
 
 ---
 
