@@ -1,4 +1,18 @@
 {
   "projectName": "Kizunat",
-  "projectOwner": "AlejandroEleazar"
+  "projectOwner": "AlejandroEleazar",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": ["README.md"],
+  "imageSize": 100,
+  "commit": true,
+  "contributors": [
+    {
+      "login": "AlejandroEleazar",
+      "name": "Alejandro Eleazar",
+      "avatar_url": "https://avatars.githubusercontent.com/u/tu-id-aqui?v=4",
+      "profile": "https://github.com/AlejandroEleazar",
+      "contributions": ["code"]
+    }
+  ]
 }
