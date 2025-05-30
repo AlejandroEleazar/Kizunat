@@ -44,10 +44,21 @@
 
 ## 📊 Project Status
 
+🚀 The project is under active development, with continuous improvements and new features being added regularly.
+This is the first stable release of Kizunat — fully functional and ready to use.
+We’re still working on enhancements and appreciate all feedback and suggestions to help make the app even better!
+
 ---
 
 ## 🎯 Features & Demo
 
+- 🔒 Secure user authentication with Firebase Auth  
+- 📅 Weekly personalized meal plans  
+- 🛡️ Allergy and dietary restriction filters  
+- 🌿 Nutritional data from Edamam API  
+- 🧑‍⚕️ User health profile management (height, weight, activity level)  
+- 🎨 Sleek UI built with Jetpack Compose
+  
 ---
 
 ## 🔗 Access to the Project
