@@ -63,9 +63,58 @@ We’re still working on enhancements and appreciate all feedback and suggestion
 
 ## 🔗 Access to the Project
 
+You can try Kizunat by downloading and installing the APK on your Android device:
+
+<div align="center">
+
+  <!-- QR Code personalizado -->
+  <img 
+    src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://example.com/kizunat.apk&color=6BBF59&bgcolor=ffffff&ecc=M" 
+    alt="QR Code to download Kizunat APK"
+    style="margin-bottom: 12px; border-radius: 12px; box-shadow: 0 0 8px rgba(107,191,89,0.5);"
+  />
+
+  <!-- Botón debajo del QR -->
+  <br/>
+
+  [![⬇️ Download APK](https://img.shields.io/badge/⬇️%20Download%20APK-Kizunat-6BBF59?style=for-the-badge&logo=android&logoColor=white)](https://example.com/kizunat.apk)
+
+</div>
+
+
+### 💻 Run Locally
+
+```bash
+git clone https://github.com/AlejandroEleazar/Kizunat.git
+```
+
+<br/>
+
+### 🧰 Open in Android Studio
+
+- Open the project using **Android Studio Giraffe (or higher)**.
+- Let Gradle finish syncing and ensure all dependencies are resolved.
+
+<br/>
+
+### ▶️ Run the App
+
+- Connect a physical Android device or start an emulator.
+- Click the **Run ▶️** button to build and launch the app.
+
+<br/>
+
+> ⚠️ Version Information
+> 
+> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✅ **This is the first stable version** of Kizunat.  
+> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🚧 The project is under **active development**, with frequent updates and new features.  
+> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📦 Stay tuned for future **APK releases and enhancements**!
+
+<br/>
+
 ---
 
-## 🛠️ **Technologies Used**
+## 🛠️ Technologies Used
 
 - 🧪 Kotlin + Jetpack Compose
 - ☁️ Firebase (Auth, Firestore)
