@@ -40,13 +40,30 @@
 
 ## 📖 Project Description
 
+---
+
 ## 📊 Project Status
+
+---
 
 ## 🎯 Features & Demo
 
+---
+
 ## 🔗 Access to the Project
 
-## 🛠️ Technologies Used
+---
+
+## 🛠️ **Technologies Used**
+
+- 🧪 Kotlin + Jetpack Compose
+- ☁️ Firebase (Auth, Firestore)
+- 🌱 Edamam Nutrition API
+- 🎨 Material Design 3
+- 🧪 MVVM Architecture
+- 🛠️ Git & GitHub
+
+---
 
 ## 👨‍💻 Core Developers
 
@@ -62,9 +79,19 @@
 
 </div>
 
+---
+
 ## 📄 License
 
+This project is licensed under the MIT License. See [LICENSE](./LICENSE) for details.
+
+---
 
 ## ✅ Conclusion
+
+We believe that health starts with habits.  
+Help us improve Kizunat or try it yourself — your feedback is welcome!
+
+⭐ Star the project if you like it!
 
 
