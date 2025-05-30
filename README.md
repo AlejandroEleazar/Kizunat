@@ -15,12 +15,6 @@
 
 <!-- ALL-CONTRIBUTORS-LIST:START -->
 <!-- prettier-ignore-start -->
-<table>
-  <tr>
-    <td align="center"><a href="https://github.com/AlejandroEleazar"><img src="https://avatars.githubusercontent.com/u/1234567?v=4" width="60px;" alt="Alejandro Eleazar"/><br /><sub><b>Alejandro Eleazar</b></sub></a><br /><a href="#code-AlejandroEleazar" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/otrocontribuidor"><img src="https://avatars.githubusercontent.com/u/7654321?v=4" width="60px;" alt="Otro Contribuidor"/><br /><sub><b>Otro Contribuidor</b></sub></a><br /><a href="#doc-otrocontribuidor" title="Documentation">📚</a></td>
-  </tr>
-</table>
 <!-- prettier-ignore-end -->
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
