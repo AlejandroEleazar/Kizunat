@@ -11,7 +11,9 @@
 
 ## ✨ Contributors
 
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- ALL-CONTRIBUTORS-LIST:END -->
 [![All Contributors](https://img.shields.io/github/all-contributors/AlejandroEleazar/Kizunat?color=ee8449&style=flat-square)](#-contributors)
+
+<!-- ALL-CONTRIBUTORS-LIST:START -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
 
