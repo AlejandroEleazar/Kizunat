@@ -1,36 +1,87 @@
-Kizunat - Personal Use License
+Kizunat – Personal Use License with Limited Collaborative Rights  
+Version 1.0 – Date: 2025
 
-Copyright (c) 2025 Alejandro Eleazar
+Copyright © 2025 Alejandro Eleazar  
+All rights reserved.
 
-This software and its content, including but not limited to code, design, assets, and documentation (collectively referred to as “Software”), is protected by intellectual property laws and is the exclusive property of the author.
+This document constitutes a legal license agreement ("License") between any individual or legal entity ("the User") and the sole copyright owner and author of the “Kizunat” software application (“the Author”). By downloading, installing, or using the Software, the User agrees to the following terms and conditions:
 
-Permission is hereby granted to any individual to download, install, and use the Software solely for **personal and non-commercial purposes**.
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––
 
-The following terms and conditions apply:
+1. PURPOSE OF THE LICENSE
 
-1. **Non-Commercial Use Only**
-   - The Software may not be used for any commercial purposes, including but not limited to: selling, licensing, renting, offering as a service, or including in any paid product or platform.
+This License governs the non-commercial use of the software, source code, design, documentation, graphical elements, and any other associated components of the “Kizunat” project (hereinafter referred to as the “Software”), developed and published by Alejandro Eleazar.
 
-2. **No Modification or Derivative Works**
-   - You may not modify, alter, adapt, reverse-engineer, disassemble, decompile, or create derivative works based on the Software.
+The use of the Software is strictly limited to personal, educational, or experimental purposes. Commercial use, redistribution, or public deployment of any kind is expressly prohibited.
 
-3. **No Redistribution**
-   - You may not share, publish, distribute, upload, or make the Software publicly available in whole or in part in any format.
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––
 
-4. **Ownership and Intellectual Property**
-   - All rights, title, and interest in and to the Software remain with the author.
-   - You may not remove or alter any copyright, trademark, or other proprietary notices.
+2. GRANTED RIGHTS
 
-5. **Disclaimer of Warranty**
-   - The Software is provided "as is", without warranty of any kind, express or implied.
-   - The author shall not be held liable for any damages or losses arising from the use or inability to use the Software.
+The User is granted a limited, non-exclusive, non-transferable, and revocable right to:
 
-6. **Permission Requests**
-   - For educational, institutional, or commercial licensing inquiries, please contact:
-     [your-email@example.com]
+- Download, install, and execute the Software strictly for personal and non-commercial purposes.
+- Modify the Software locally for personal learning or experimentation, without sharing such modifications publicly or privately.
+- Suggest improvements or submit contributions through the official GitHub repository, including pull requests, issues, or discussions.
 
-By using or installing the Software, you agree to these terms. If you do not agree, do not use the Software.
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––
 
-Author: Alejandro Eleazar
-Date: 2025
+3. PROHIBITED ACTIONS
 
+Unless prior written consent is obtained from the Author, the following actions are strictly forbidden:
+
+- Using the Software for commercial, professional, or for-profit purposes.
+- Publishing, distributing, licensing, sublicensing, renting, transferring, or redistributing the Software in whole or in part, with or without modification.
+- Creating or distributing derivative works based on the Software.
+- Integrating the Software into applications, websites, digital products, or services that are publicly accessible or monetized.
+- Generating any kind of direct or indirect income through the use of the Software.
+- Attempting to circumvent, modify, or reverse-engineer any protections included in the Software.
+
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––
+
+4. INTELLECTUAL PROPERTY
+
+The Software and all associated intellectual and industrial property rights—including but not limited to copyright, trademarks, trade names, source code, designs, and documentation—are the exclusive property of Alejandro Eleazar.
+
+All rights are protected under Spanish intellectual property law (Real Decreto Legislativo 1/1996) and the European Union Directive 2009/24/EC on the legal protection of computer programs.
+
+Any unauthorized use of the Software constitutes an infringement of the Author’s intellectual property rights and may result in civil and/or criminal legal proceedings.
+
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––
+
+5. DISCLAIMER OF WARRANTIES AND LIABILITY
+
+The Software is provided “as is” without any warranties, express or implied. The Author makes no guarantees regarding its functionality, reliability, compatibility, or fitness for any particular purpose.
+
+Under no circumstances shall the Author be liable for any direct, indirect, incidental, consequential, or special damages, including but not limited to loss of data, profits, or business interruption resulting from the use or inability to use the Software.
+
+The User assumes all risks associated with using the Software.
+
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––
+
+6. TERMINATION
+
+This License shall automatically terminate if the User fails to comply with any of its terms. Upon termination, the User must immediately delete all copies of the Software and cease any use.
+
+The Author reserves the right to initiate all necessary legal actions, including civil and/or criminal proceedings, against any individual or entity that breaches this License.
+
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––
+
+7. JURISDICTION AND APPLICABLE LAW
+
+This License shall be governed by and construed in accordance with the laws of the Kingdom of Spain. Any dispute arising out of or related to this License shall be submitted to the competent courts of the Author’s place of residence, with express waiver of any other jurisdiction that might otherwise apply.
+
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––
+
+8. CONTACT
+
+For commercial licensing inquiries, collaborations, or legal matters, please contact the Author at:
+
+📧 [your-email@example.com]
+
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––
+
+By installing, using, or interacting with the Software, the User acknowledges having read, understood, and accepted the full terms of this License.
+
+Author: Alejandro Eleazar  
+Last Updated: 2025
