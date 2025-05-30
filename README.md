@@ -40,6 +40,18 @@
 
 ## 📖 Project Description
 
+**Kizunat** is a modern Android application designed to improve users' health through better eating habits and nutritional awareness.
+
+Built with **Kotlin** and **Jetpack Compose**, the app offers a seamless and intuitive user experience, allowing users to:
+
+- Track personal information such as height, weight, birthdate, and activity level.
+- Customize their dietary preferences and allergies.
+- Receive meal suggestions tailored to their health goals.
+- Use smart search powered by the **Edamam Nutrition API** to explore food data.
+
+Our goal is to provide a useful, educational, and user-friendly mobile solution for maintaining a balanced and healthy lifestyle.  
+Kizunat is built with scalability and simplicity in mind — perfect for personal use or as a foundation for future development.
+
 ---
 
 ## 📊 Project Status
