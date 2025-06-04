@@ -1,6 +1,5 @@
 package com.example.kizunat.AppScreens.LogIn
 
-import android.util.Log
 import android.widget.DatePicker
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -23,42 +22,38 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.example.kizunat.Model.User
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.kizunat.R
-
-import com.google.firebase.auth.FirebaseAuth
+import com.example.kizunat.viewmodels.FormViewModel
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.*
-
-
 
 @Composable
 fun FormScreen(
     navigateToMenu: () -> Unit,
     db: FirebaseFirestore,
     name: String,
+    formViewModel: FormViewModel = viewModel(
+        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return FormViewModel(db) as T
+            }
+        }
+    )
 ) {
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
-
-    var dateOfBirth by remember { mutableStateOf("") }
-    var height by remember { mutableStateOf("") }
-    var weight by remember { mutableStateOf("") }
-    var selectedGender by remember { mutableStateOf("") }
-    var selectedAllergies by remember { mutableStateOf(listOf<String>()) }
-    var selectedActivity by remember { mutableStateOf("") }
 
     var showGenderDialog by remember { mutableStateOf(false) }
     var showAllergiesDialog by remember { mutableStateOf(false) }
     var showActivityDialog by remember { mutableStateOf(false) }
 
-    var heightError by remember { mutableStateOf(false) }
-    var weightError by remember { mutableStateOf(false) }
-
     val datePicker = android.app.DatePickerDialog(
         context,
         { _: DatePicker, year, month, day ->
-            dateOfBirth = "$day/${month + 1}/$year"
+            formViewModel.dateOfBirth = "$day/${month + 1}/$year"
         },
         calendar.get(Calendar.YEAR),
         calendar.get(Calendar.MONTH),
@@ -97,17 +92,15 @@ fun FormScreen(
                 )
                 Spacer(Modifier.height(32.dp))
 
-                // Date of Birth - se muestra normalmente el valor
-                FormFieldRow("Date of Birth", dateOfBirth, onClick = { datePicker.show()  }) {
+                // Date of Birth
+                FormFieldRow("Date of Birth", formViewModel.dateOfBirth, onClick = { datePicker.show() }) {
                     Icon(Icons.Default.DateRange, contentDescription = null, tint = Color.Gray)
                 }
                 Spacer(Modifier.height(24.dp))
 
-                // Gender - se muestra vacío aunque tenga seleccionado (valor guardado)
-                FormOptionRow("Gender", "") { showGenderDialog = true }
+                // Gender
+                FormOptionRow("Gender", formViewModel.selectedGender) { showGenderDialog = true }
                 Spacer(Modifier.height(24.dp))
-
-                Log.i("Date", dateOfBirth)
 
                 // Height input
                 Column(modifier = Modifier.fillMaxWidth()) {
@@ -122,14 +115,9 @@ fun FormScreen(
                             modifier = Modifier.weight(0.35f)
                         )
                         OutlinedTextField(
-                            value = height,
-                            onValueChange = {
-                                if (it.length <= 3 && it.all { ch -> ch.isDigit() }) {
-                                    height = it
-                                    heightError = it.toIntOrNull()?.let { num -> num !in 0..999 } ?: true
-                                }
-                            },
-                            isError = heightError,
+                            value = formViewModel.height,
+                            onValueChange = { formViewModel.onHeightChange(it) },
+                            isError = formViewModel.heightError,
                             singleLine = true,
                             modifier = Modifier
                                 .weight(0.22f)
@@ -145,12 +133,12 @@ fun FormScreen(
                             colors = OutlinedTextFieldDefaults.colors()
                         )
                     }
-                    HorizontalDivider(
+                    Divider(
                         color = Color.LightGray,
                         thickness = 1.dp,
                         modifier = Modifier.padding(top = 6.dp)
                     )
-                    if (heightError) {
+                    if (formViewModel.heightError) {
                         Text(
                             "Please enter a valid height (0-999 cm)",
                             color = Color.Red,
@@ -175,14 +163,9 @@ fun FormScreen(
                             modifier = Modifier.weight(0.35f)
                         )
                         OutlinedTextField(
-                            value = weight,
-                            onValueChange = {
-                                if (it.length <= 3 && it.all { ch -> ch.isDigit() }) {
-                                    weight = it
-                                    weightError = it.toIntOrNull()?.let { num -> num !in 0..999 } ?: true
-                                }
-                            },
-                            isError = weightError,
+                            value = formViewModel.weight,
+                            onValueChange = { formViewModel.onWeightChange(it) },
+                            isError = formViewModel.weightError,
                             singleLine = true,
                             modifier = Modifier
                                 .weight(0.22f)
@@ -198,12 +181,12 @@ fun FormScreen(
                             colors = OutlinedTextFieldDefaults.colors()
                         )
                     }
-                    HorizontalDivider(
+                    Divider(
                         color = Color.LightGray,
                         thickness = 1.dp,
                         modifier = Modifier.padding(top = 6.dp)
                     )
-                    if (weightError) {
+                    if (formViewModel.weightError) {
                         Text(
                             "Please enter a valid weight (0-999 kg)",
                             color = Color.Red,
@@ -215,14 +198,14 @@ fun FormScreen(
 
                 Spacer(Modifier.height(24.dp))
 
-                // Allergies - siempre vacío el texto visible aunque tenga seleccionadas
-                FormOptionRow("Allergies", "") {
+                // Allergies
+                FormOptionRow("Allergies", formViewModel.selectedAllergies.joinToString()) {
                     showAllergiesDialog = true
                 }
                 Spacer(Modifier.height(24.dp))
 
-                // Activity Level - siempre vacío el texto visible aunque tenga seleccionado
-                FormOptionRow("Activity Level", "") {
+                // Activity Level
+                FormOptionRow("Activity Level", formViewModel.selectedActivity) {
                     showActivityDialog = true
                 }
 
@@ -230,8 +213,10 @@ fun FormScreen(
 
                 Button(
                     onClick = {
-                        saveUser(db, name, dateOfBirth, height, weight, selectedGender, selectedAllergies, selectedActivity)
-                        navigateToMenu()
+                        formViewModel.saveUser(name,
+                            onSuccess = { navigateToMenu() },
+                            onFailure = { /* manejar error aquí si quieres */ }
+                        )
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -244,15 +229,14 @@ fun FormScreen(
             }
         }
 
-
         if (showGenderDialog) {
             SimpleDialog(
                 title = "Select Gender",
                 options = listOf("Male", "Female", "Other", "Prefer not to say"),
-                selected = selectedGender,
+                selected = formViewModel.selectedGender,
                 onDismiss = { showGenderDialog = false },
                 onSelect = {
-                    selectedGender = it
+                    formViewModel.selectedGender = it
                     showGenderDialog = false
                 }
             )
@@ -262,10 +246,10 @@ fun FormScreen(
             MultiSelectDialog(
                 title = "Select Allergies",
                 options = listOf("Gluten", "Lactose", "Seafood", "Dried Fruits", "Eggs", "Soy"),
-                selected = selectedAllergies,
+                selected = formViewModel.selectedAllergies,
                 onDismiss = { showAllergiesDialog = false },
                 onSelect = {
-                    selectedAllergies = it
+                    formViewModel.selectedAllergies = it
                     showAllergiesDialog = false
                 }
             )
@@ -275,17 +259,16 @@ fun FormScreen(
             SimpleDialog(
                 title = "Select Activity Level",
                 options = listOf("Low", "Medium", "High"),
-                selected = selectedActivity,
+                selected = formViewModel.selectedActivity,
                 onDismiss = { showActivityDialog = false },
                 onSelect = {
-                    selectedActivity = it
+                    formViewModel.selectedActivity = it
                     showActivityDialog = false
                 }
             )
         }
     }
 }
-
 
 @Composable
 private fun FormFieldRow(
@@ -306,7 +289,7 @@ private fun FormFieldRow(
             Spacer(Modifier.width(12.dp))
             trailingIcon()
         }
-        HorizontalDivider(color = Color.LightGray, thickness = 1.dp, modifier = Modifier.padding(top = 6.dp))
+        Divider(color = Color.LightGray, thickness = 1.dp, modifier = Modifier.padding(top = 6.dp))
     }
 }
 
@@ -391,7 +374,7 @@ private fun MultiSelectDialog(
     onDismiss: () -> Unit,
     onSelect: (List<String>) -> Unit
 ) {
-    var temp by remember { mutableStateOf(selected.toSet()) } // Internamente usar Set para lógica
+    var temp by remember { mutableStateOf(selected.toSet()) }
 
     Dialog(onDismissRequest = onDismiss) {
         ElevatedCard(
@@ -428,55 +411,19 @@ private fun MultiSelectDialog(
                 }
                 Spacer(Modifier.height(24.dp))
                 Button(
-                    onClick = { onSelect(temp.toList()) }, // Convertir Set a List aquí
+                    onClick = {
+                        onSelect(temp.toList())
+                        onDismiss()
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF476730),
                         contentColor = Color.White
                     )
                 ) {
-                    Text(text = "Finish")
+                    Text("Finish")
                 }
             }
         }
-    }
-}
-
-
-
-fun saveUser(
-    db: FirebaseFirestore,
-    name: String,
-    dateOfBirth: String,
-    height: String,
-    weight: String,
-    selectedGender: String,
-    selectedAllergies: List<String>,
-    selectedActivity: String,
-) {
-
-    val user = FirebaseAuth.getInstance().currentUser
-    val uid = user?.uid
-
-    uid?.let {
-        val userData = User(
-            name = name,
-            dateOfBirth = dateOfBirth,
-            gender = selectedGender,
-            height = height.toInt(),
-            weight = weight.toInt(),
-            allergies = selectedAllergies,
-            activityLevel = selectedActivity,
-            mail = user.email
-        )
-        Log.i("ID", it)
-        db.collection("users").document(it).set(userData)
-
-            .addOnSuccessListener {
-                Log.i("Kizunat", "Success")
-            }
-            .addOnFailureListener {
-                Log.i("Kizunat", "Failure: ${it.message}")
-            }
     }
 }
