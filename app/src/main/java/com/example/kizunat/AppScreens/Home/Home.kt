@@ -1,6 +1,5 @@
 package com.example.kizunat.AppScreens.Home
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,9 +31,9 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -47,20 +46,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.kizunat.AppScreens.CustomScaffold
 import com.example.kizunat.Model.Menu.Menu
 import com.example.kizunat.R
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import coil.compose.AsyncImage
 
 @Composable
 fun HomeScreen(
-    db: FirebaseFirestore,
+    viewModel: HomeViewModel,
     navigateToHome: () -> Unit,
     navigateToMenu: () -> Unit,
     navigateToProfile: () -> Unit
@@ -70,58 +66,52 @@ fun HomeScreen(
         navigateToMenu,
         navigateToProfile
     ) { padding ->
-        Content(padding, db)
+        Content(padding, viewModel)
     }
 }
 
 @Composable
-fun Content(padding: PaddingValues, db: FirebaseFirestore) {
-
-    var menu by remember { mutableStateOf<Menu?>(null) }
-    val uid = FirebaseAuth.getInstance().currentUser?.uid
-
-    LaunchedEffect(uid) {
-        if (uid != null) {
-            try {
-                val snapshot = db.collection("menus").document(uid).get().await()
-                menu = snapshot.toObject(Menu::class.java)
-                Log.d("Firestore", "Usuario cargado: $menu")
-            } catch (e: Exception) {
-                Log.e("Firestore", "Error al obtener el usuario", e)
-            }
-        } else {
-            Log.e("Auth", "Usuario no autenticado")
-        }
-    }
+fun Content(padding: PaddingValues, viewModel: HomeViewModel) {
+    val menu by viewModel.menu.collectAsState()
 
     val currentDate = remember {
         SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
     }
 
-
-
     val lazyListState = rememberLazyListState()
     val currentIndex by remember {
-        derivedStateOf {
-            lazyListState.firstVisibleItemIndex
-        }
+        derivedStateOf { lazyListState.firstVisibleItemIndex }
     }
 
-
-
     val meals = listOf(
-        Meal("Breakfast", menu?.breakfast?.name.toString(), menu?.breakfast?.imgUrl.toString(), menu?.breakfast?.cal.toString()),
-        Meal("Lunch", menu?.lunch?.name.toString(), menu?.lunch?.imgUrl.toString(), menu?.lunch?.cal.toString()),
-        Meal("Dinner", menu?.dinner?.name.toString(), menu?.dinner?.imgUrl.toString(), menu?.dinner?.cal.toString())
+        Meal(
+            "Breakfast",
+            menu?.breakfast?.name?.toString() ?: "",
+            menu?.breakfast?.imgUrl?.toString() ?: "",
+            menu?.breakfast?.cal?.toString() ?: ""
+        ),
+        Meal(
+            "Lunch",
+            menu?.lunch?.name?.toString() ?: "",
+            menu?.lunch?.imgUrl?.toString() ?: "",
+            menu?.lunch?.cal?.toString() ?: ""
+        ),
+        Meal(
+            "Dinner",
+            menu?.dinner?.name?.toString() ?: "",
+            menu?.dinner?.imgUrl?.toString() ?: "",
+            menu?.dinner?.cal?.toString() ?: ""
+        )
     )
+
     val totalCalories = meals.sumOf { it.calories.toIntOrNull() ?: 0 }
     val currentMeal = meals.getOrNull(currentIndex) ?: meals.first()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = Color(0xFFF9FAEF))
+            .background(Color(0xFFF9FAEF))
     ) {
-        // Fondo con imagen
         Image(
             painter = painterResource(id = R.drawable.bg_3),
             contentDescription = null,
@@ -129,13 +119,13 @@ fun Content(padding: PaddingValues, db: FirebaseFirestore) {
             modifier = Modifier.fillMaxSize()
         )
 
-        Column (
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(bottom = 10.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
-        ){
+        ) {
             Spacer(modifier = Modifier.height(70.dp))
 
             LazyRow(
@@ -147,6 +137,7 @@ fun Content(padding: PaddingValues, db: FirebaseFirestore) {
                     MealCard(currentDate, meal)
                 }
             }
+
             Spacer(modifier = Modifier.height(33.dp))
 
             Text(
@@ -179,7 +170,7 @@ fun Content(padding: PaddingValues, db: FirebaseFirestore) {
                 text = "Mood",
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
-                      .align(Alignment.Start),
+                    .align(Alignment.Start),
                 color = Color(0xFF476730),
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold
@@ -188,7 +179,6 @@ fun Content(padding: PaddingValues, db: FirebaseFirestore) {
             Spacer(modifier = Modifier.height(23.dp))
 
             MoodSelector()
-
         }
     }
 }
@@ -203,36 +193,31 @@ fun MealCard(date: String, meal: Meal) {
             .height(149.dp)
             .width(360.dp),
         shape = RoundedCornerShape(40.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFFFFFFF)
-        )
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
-        Row (
-            modifier = Modifier.fillMaxWidth(),
-        ){
+        Row(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier
                     .height(149.dp)
                     .width(160.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
                 Spacer(Modifier.height(20.dp))
 
                 Text(
-                    date,
+                    text = date,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
-                    color = Color(0xFF476730),
+                    color = Color(0xFF476730)
                 )
 
                 Spacer(Modifier.height(20.dp))
 
                 Text(
-                    meal.name,
+                    text = meal.name,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
-                    color = Color(0xFF476730),
+                    color = Color(0xFF476730)
                 )
             }
 
@@ -249,13 +234,11 @@ fun MealCard(date: String, meal: Meal) {
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .fillMaxSize() // o cualquier tamaño que quieras
-                        .clip(RoundedCornerShape(40.dp)) // si necesitas forma
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(40.dp))
                 )
             }
         }
-
-
     }
 }
 
@@ -263,30 +246,26 @@ fun MealCard(date: String, meal: Meal) {
 fun NutrientCard(title: String, value: String) {
     ElevatedCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        modifier = Modifier
-            .size(175.dp, 100.dp),
+        modifier = Modifier.size(175.dp, 100.dp),
         shape = RoundedCornerShape(40.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFFFFFFF)
-        )
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            
             Text(
-                title,
+                text = title,
                 color = Color(0xFF476730),
                 fontSize = 20.sp,
-                modifier = Modifier.padding(10.dp,0.dp,0.dp,0.dp)
+                modifier = Modifier.padding(start = 10.dp)
             )
 
             Spacer(Modifier.height(10.dp))
 
             Text(
-                value,
+                text = value,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF476730),
                 fontSize = 20.sp
@@ -306,6 +285,7 @@ fun MoodSelector() {
         Icons.Filled.SentimentSatisfied,
         Icons.Filled.SentimentVerySatisfied
     )
+
     ElevatedCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         modifier = Modifier
@@ -313,7 +293,6 @@ fun MoodSelector() {
             .height(70.dp),
         shape = RoundedCornerShape(20.dp)
     ) {
-
         Row(
             modifier = Modifier
                 .clip(RoundedCornerShape(20.dp))

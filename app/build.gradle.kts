@@ -80,9 +80,11 @@ dependencies {
 
     //Coil
     implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation(libs.androidx.ui.test.junit4.android)
 
-    
 
+    testImplementation("io.mockk:mockk:1.13.8")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:1.8.21")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

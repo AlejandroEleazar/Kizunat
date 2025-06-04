@@ -1,6 +1,7 @@
 package com.example.kizunat.NavigationWrapper
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -11,6 +12,8 @@ import com.example.kizunat.AppScreens.LogIn.AuthScreen
 import com.example.kizunat.AppScreens.Profile.EditProfileScreen
 import com.example.kizunat.AppScreens.LogIn.FormScreen
 import com.example.kizunat.AppScreens.Home.HomeScreen
+import com.example.kizunat.AppScreens.Home.HomeViewModel
+
 import com.example.kizunat.AppScreens.Menu.MenuScreen
 import com.example.kizunat.AppScreens.Profile.ProfileScreen
 import com.example.kizunat.AppScreens.Welcome.welcome
@@ -45,22 +48,28 @@ fun NavigationWrapper(auth: FirebaseAuth, db: FirebaseFirestore) {
         }
 
         composable<Form> { backStackEntry2 ->
-            val detail2 = backStackEntry2.toRoute<Form>()
+            val detail2 = backStackEntry2.arguments?.getString("name") ?: ""
+
+
             FormScreen(
-                navigateToMenu = {navController.navigate(Menu)},
-                db,
-                detail2.name
+                navigateToMenu = { navController.navigate(Menu) },
+                db = db,
+                name = detail2,
             )
         }
 
+
+
         composable<Home> {
+            val homeViewModel = HomeViewModel(db)
             HomeScreen(
-                db,
-                navigateToHome = {navController.navigate(Home)},
-                navigateToMenu = {navController.navigate(Menu)},
-                navigateToProfile = {navController.navigate(Profile)}
+                viewModel = homeViewModel,
+                navigateToHome = { navController.navigate(Home) },
+                navigateToMenu = { navController.navigate(Menu) },
+                navigateToProfile = { navController.navigate(Profile) }
             )
         }
+
 
         composable<Menu> {
             MenuScreen(

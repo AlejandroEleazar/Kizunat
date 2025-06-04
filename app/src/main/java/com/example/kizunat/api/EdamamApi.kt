@@ -9,7 +9,8 @@ import kotlinx.coroutines.withContext
 object EdamamApi {
     private const val APP_ID  = "9987b754"
     private const val APP_KEY = "65c9299ec4f9dc2f3e613447f6f20f26"
-    private val service = RetrofitClient.retrofit.create(RecipeService::class.java)
+    var service: RecipeService = RetrofitClient.retrofit.create(RecipeService::class.java)
+
 
     private fun excludedParam(allergies: List<String>): String? {
         val mapped = mapAllergiesToEdamamParams(allergies)
