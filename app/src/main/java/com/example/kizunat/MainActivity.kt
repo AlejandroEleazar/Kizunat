@@ -43,7 +43,6 @@ class MainActivity : ComponentActivity() {
             fetchMenuCollection()
         } else {
             Log.d(TAG, "Usuario NO autenticado")
-            // Aquí podrías iniciar flujo de login si quieres
         }
     }
 
